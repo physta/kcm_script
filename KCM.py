@@ -384,8 +384,8 @@ for k in range(len(T)):
           k_kin+=Cv_mode*vel2_matrix*tau_k 
           k_col_num+=Cv_mode*q_vec*vel_vec/w  
           k_col_den+=(tau_U**-1.+tau_I**-1.)*Cv_mode*C1
-          tau_col_num+=Cv_mode*multiply(C1,vel2_matrix)
-          tau_col_den+=(tau_U**-1.+tau_I**-1.)*Cv_mode*multiply(C1,vel2_matrix)
+          tau_col_num+=Cv_mode*C1
+          tau_col_den+=(tau_U**-1.+tau_I**-1.)*Cv_mode*C1
        else:
 	if Leff!='inf':
           tau_k=tau_BI
@@ -393,8 +393,8 @@ for k in range(len(T)):
 	if tau_I!='nan':
 	          k_col_num+=Cv_mode*q_vec*vel_vec/w  
         	  k_col_den+=tau_I**-1.*Cv_mode*C1
-                  tau_col_num+=Cv_mode*multiply(C1,vel2_matrix)
-                  tau_col_den+=tau_I**-1.*Cv_mode*multiply(C1,vel2_matrix)
+                  tau_col_num+=Cv_mode*C1
+                  tau_col_den+=tau_I**-1.*Cv_mode*C1
 
        v2Cv+=Cv_mode*(vel2_matrix)
 
