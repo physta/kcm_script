@@ -287,7 +287,7 @@ if TAU_T=='Y':
         file4.write("%s \n\n"%('# (1)T[k]  (2)tau_kin*[s]  (3)tau_col*[s]  (4)tau_N[s]  (5)sigma[adim] (6)vel_int'))
 	tau_T=[]
 
-print 'Temp[k]  Kappa[W/mK]  NL-lenght[nm] K_kin[W/mK]  K_col[W/mK] Sigma[adim]\n'
+print 'Temp[k]  Kappa[W/mK]  NL-length[nm] K_kin[W/mK]  K_col[W/mK] Sigma[adim]\n'
 
 k_col=[]
 
