@@ -359,7 +359,6 @@ for k in range(len(T)):
 
        Cv_mode=cv[k][j][i]*1.602e-19   #J/(m**3K)
        C1=q2_matrix/w**2.   #projection factor
-       C2=multiply(q2_matrix,q2_matrix)/w**2.   #projection factor
 
        if 'gamma_isotope' in f:
           if g_I!=0.:
@@ -385,8 +384,8 @@ for k in range(len(T)):
           k_kin+=Cv_mode*vel2_matrix*tau_k 
           k_col_num+=Cv_mode*q_vec*vel_vec/w  
           k_col_den+=(tau_U**-1.+tau_I**-1.)*Cv_mode*C1
-          tau_col_num+=Cv_mode*C1
-          tau_col_den+=(tau_U**-1.+tau_I**-1.)*Cv_mode*C1
+          tau_col_num+=Cv_mode*vel2_matrix
+          tau_col_den+=(tau_U**-1.+tau_I**-1.)*Cv_mode*vel2_matrix
        else:
 	if Leff!='inf':
           tau_k=tau_BI
@@ -394,8 +393,8 @@ for k in range(len(T)):
 	if tau_I!='nan':
 	          k_col_num+=Cv_mode*q_vec*vel_vec/w  
         	  k_col_den+=tau_I**-1.*Cv_mode*C1
-                  tau_col_num+=Cv_mode*C1
-                  tau_col_den+=tau_I**-1.*Cv_mode*C1
+                  tau_col_num+=Cv_mode*vel2_matrix
+                  tau_col_den+=tau_I**-1.*Cv_mode*vel2_matrix
 
        v2Cv+=Cv_mode*(vel2_matrix)
 
