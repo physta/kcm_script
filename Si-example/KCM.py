@@ -362,15 +362,19 @@ for k in range(len(T)):
 
        if 'gamma_isotope' in f:
           if g_I!=0.:
-	       tau_I=(2*3.14159265*2.*1.e12*g_I)**-1.0*I_SF
-	       if Leff!='inf':
-		       tau_BI=1./(np.sqrt(abs(vel2_matrix))/Leff+tau_I**-1)
-	       else:
-		       tau_BI=tau_I
+               tau_I=(2*3.14159265*2.*1.e12*g_I)**-1.0*I_SF
+               if Leff!='inf':
+                       tau_BI=1./(np.sqrt(abs(vel2_matrix))/Leff+tau_I**-1)
+               else:
+                       tau_BI=tau_I
+          else:
+               if Leff!='inf':
+                    tau_B=np.true_divide(Leff,np.sqrt(abs(vel2_matrix)), where=(np.sqrt(abs(vel2_matrix))!=0.))
+                    tau_BI=tau_B
        else:
-	  if Leff!='inf':
+          if Leff!='inf':
                tau_B=np.true_divide(Leff,np.sqrt(abs(vel2_matrix)), where=(np.sqrt(abs(vel2_matrix))!=0.))
-	       tau_BI=tau_B
+               tau_BI=tau_B
 
        if g_N!=0:
           tau_N=(2*3.14159265*2.*1.e12*g_N)**-1.0
@@ -380,21 +384,21 @@ for k in range(len(T)):
 
        if g_U!=0:
           tau_U=(2*3.14159265*2.*1.e12*g_U)**-1.0
-	  tau_k=(tau_U**-1.+np.true_divide(1,tau_BI, where=(tau_BI!=0.)))**-1.
-          k_kin+=Cv_mode*vel2_matrix*tau_k 
-          k_col_num+=Cv_mode*q_vec*vel_vec/w  
+          tau_k=(tau_U**-1.+np.true_divide(1,tau_BI, where=(tau_BI!=0.)))**-1.
+          k_kin+=Cv_mode*vel2_matrix*tau_k
+          k_col_num+=Cv_mode*q_vec*vel_vec/w
           k_col_den+=(tau_U**-1.+tau_I**-1.)*Cv_mode*C1
-          tau_col_num+=Cv_mode*vel2_matrix
-          tau_col_den+=(tau_U**-1.+tau_I**-1.)*Cv_mode*vel2_matrix
+          tau_col_num+=Cv_mode*C1
+          tau_col_den+=(tau_U**-1.+tau_I**-1.)*Cv_mode*C1
        else:
-	if Leff!='inf':
+        if Leff!='inf':
           tau_k=tau_BI
           k_kin+=Cv_mode*vel2_matrix*tau_k
-	if tau_I!='nan':
-	          k_col_num+=Cv_mode*q_vec*vel_vec/w  
-        	  k_col_den+=tau_I**-1.*Cv_mode*C1
-                  tau_col_num+=Cv_mode*vel2_matrix
-                  tau_col_den+=tau_I**-1.*Cv_mode*vel2_matrix
+        if tau_I!='nan':
+                  k_col_num+=Cv_mode*q_vec*vel_vec/w
+                  k_col_den+=tau_I**-1.*Cv_mode*C1
+                  tau_col_num+=Cv_mode*C1
+                  tau_col_den+=tau_I**-1.*Cv_mode*C1
 
        v2Cv+=Cv_mode*(vel2_matrix)
 
