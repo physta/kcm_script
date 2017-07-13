@@ -48,10 +48,11 @@ def expand(data):
     qpoint = data['qpoint']
     frequency = data['frequency']
     cv = data['heat_capacity']
-    g_N = data['gamma_N']
-    g_U = data['gamma_U']
-    g_I = data['gamma_isotope']   
- 
+    if 'gamma_N' in data:
+        g_N = data['gamma_N']
+        g_U = data['gamma_U']
+    if 'gamma_isotope' in data:
+        g_I = data['gamma_isotope']
     symmetry = data['symmetry']
     primitive = data['cell']
     mesh = data['mesh']
@@ -71,10 +72,17 @@ def expand(data):
                        dtype='double', order='C')
     cv_bz = np.zeros((cv.shape[0], len(grid_address), cv.shape[2]),
                      dtype='double', order='C')
-    g_N_bz = np.zeros_like(cv_bz)
-    g_U_bz = np.zeros_like(cv_bz)
-    g_I_bz = np.zeros((len(grid_address), frequency.shape[1]),
+    if 'gamma_N' in data:
+        g_N_bz = np.zeros_like(cv_bz)
+        g_U_bz = np.zeros_like(cv_bz)
+    else:
+        g_N_bz = None
+        g_U_bz = None
+    if 'gamma_isotope' in data:
+        g_I_bz = np.zeros((len(grid_address), frequency.shape[1]),
                        dtype='double', order='C')
+    else:
+        g_I_bz = None
 
     num_band = gv.shape[1]
     for i, gp in enumerate(ir_grid_points):
@@ -92,9 +100,11 @@ def expand(data):
             qpt_bz[rgp] = np.dot(r, qpoint[i])
             freq_bz[rgp] = frequency[i]
             cv_bz[:, rgp, :] = cv[:, i, :]
-            g_N_bz[:, rgp, :] = g_N[:, i, :]
-            g_U_bz[:, rgp, :] = g_U[:, i, :]
-            g_I_bz[rgp] = g_I[i]
+            if 'gamma_N' in data:
+                g_N_bz[:, rgp, :] = g_N[:, i, :]
+                g_U_bz[:, rgp, :] = g_U[:, i, :]
+            if 'gamma_isotope' in data:
+                g_I_bz[rgp] = g_I[i]
 
     return gv_bz, qpt_bz, freq_bz, cv_bz, g_N_bz, g_U_bz, g_I_bz
 
@@ -106,15 +116,19 @@ def parse_args():
     parser.add_argument("--yaml",
                         dest="write_yaml", action="store_true",
                         help="Write data to text in yaml format")
+    parser.add_argument("--pwscf", action="store_true",
+                        help="Pwscf mode")
     parser.add_argument('filenames', nargs='*')
     args = parser.parse_args()
     return args
 
 f = h5py.File(parse_args().filenames[1])
 
-def get_data(args):
+def get_data(args, interface_mode=None):
     args = parse_args()
-    cell, _ = read_crystal_structure(args.filenames[0])
+    cell, _ = read_crystal_structure(args.filenames[0],
+                                     interface_mode=interface_mode)
+    f = h5py.File(args.filenames[1])
     primitive_matrix = np.reshape(
         [fracval(x) for x in args.primitive_matrix.split()], (3, 3))
     primitive = get_primitive(cell, primitive_matrix)
@@ -128,28 +142,40 @@ def get_data(args):
     data['group_velocity'] = f['group_velocity'][:] # (gp, band, 3)
     data['qpoint'] = f['qpoint'][:] # (gp, 3)
     data['frequency'] = f['frequency'][:] # (gp, band)
-    data['gamma_N'] = f['gamma_N'][:] # (temps, gp, band)
-    data['gamma_U'] = f['gamma_U'][:] # (temps, gp, band)
-    data['gamma_isotope'] = f['gamma_isotope'][:] # (gp, band)
+    if 'gamma_N' in f:
+        data['gamma_N'] = f['gamma_N'][:] # (temps, gp, band)
+        data['gamma_U'] = f['gamma_U'][:] # (temps, gp, band)
+    if 'gamma_isotope' in f:
+        data['gamma_isotope'] = f['gamma_isotope'][:] # (gp, band)
     data['heat_capacity'] = f['heat_capacity'][:] # (temps, gp, band)
     data['temperature'] = np.array(f['temperature'][:], dtype='double') # (temps)
-
     ir_grid_points, grid_address, _ = get_grid_symmetry(data)
     data['ir_grid_points'] = ir_grid_points
     data['grid_address'] = grid_address
 
     return data
 
+
 args = parse_args()
-data = get_data(args)
+if args.pwscf:
+        data = get_data(args, interface_mode='pwscf')
+else:
+        data = get_data(args)
 gv_bz, qpt_bz, freq_bz, cv_bz, g_N_bz, g_U_bz, g_I_bz = expand(data)
 
 qpoint=qpt_bz
 freq=freq_bz
 cv=cv_bz
-gamma_N = g_N_bz
-gamma_U = g_U_bz
-gamma_I= g_I_bz
+
+if 'gamma_N' in f:
+    gamma_N = g_N_bz
+    gamma_U = g_U_bz
+else:
+    print '\n WARNING!: To run KCM you need to split normal and umklapp processes'
+    print '           using --nu in the phono3py calculation \n'
+    sys.exit()
+if 'gamma_isotope' in f:
+    gamma_I= g_I_bz
 vel=gv_bz
 gamma=f['gamma']
 weight=f['weight']
@@ -287,7 +313,7 @@ if TAU_T=='Y':
         file4.write("%s \n\n"%('# (1)T[k]  (2)tau_kin*[s]  (3)tau_col*[s]  (4)tau_N[s]  (5)sigma[adim] (6)vel_int'))
 	tau_T=[]
 
-print 'Temp[k]  Kappa[W/mK]  NL-lenght[nm] K_kin[W/mK]  K_col[W/mK] Sigma[adim]\n'
+print 'Temp[k]  Kappa[W/mK]  NL-length[nm] K_kin[W/mK]  K_col[W/mK] Sigma[adim]\n'
 
 k_col=[]
 
@@ -318,7 +344,8 @@ for k in range(len(T)):
     for i in range(len(freq[j])):
        g_N=gamma_N[k][j][i]
        g_U=gamma_U[k][j][i]
-       g_I=gamma_I[j][i]
+       if 'gamma_isotope' in f:
+          g_I=gamma_I[j][i]
        w=freq[j][i]*1.e12*2.*pi   # rads/s
        vx=vel[j][i][0]*100.  # ( THz * Angstrom ) --> m/s
        vy=vel[j][i][1]*100.
@@ -334,7 +361,8 @@ for k in range(len(T)):
        C1=q2_matrix/w**2.   #projection factor
        C2=multiply(q2_matrix,q2_matrix)/w**2.   #projection factor
 
-       if g_I!=0.:
+       if 'gamma_isotope' in f:
+          if g_I!=0.:
 	       tau_I=(2*3.14159265*2.*1.e12*g_I)**-1.0*I_SF
 	       if Leff!='inf':
 		       tau_BI=1./(np.sqrt(abs(vel2_matrix))/Leff+tau_I**-1)

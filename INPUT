@@ -1,11 +1,11 @@
-TEMP= 200 300
+TEMP= 300
 BOUNDARY= Y
 TYPE= W
-L= 200 
+L= 0.003 
 I_SF= 1
 COMP= XX
-K_W= Y 
-K_MFP= Y
-TAU_W= Y 
-TAU_T= Y
+K_W= N 
+K_MFP= N
+TAU_W= N 
+TAU_T= N
 STP= 100.
