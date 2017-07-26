@@ -266,7 +266,7 @@ if BOUNDARY=='Y':
   if TYPE=='F':
         Leff=2.25*L
 else:
-  Leff='inf'
+  Leff=10   #Cutoff to avoid numerical noise from the gamma values
 
 if BOUNDARY=='Y':
 	prefix=TYPE+str(Leff)
@@ -363,18 +363,17 @@ for k in range(len(T)):
        if 'gamma_isotope' in f:
           if g_I!=0.:
                tau_I=(2*3.14159265*2.*1.e12*g_I)**-1.0*I_SF
-               if Leff!='inf':
-                       tau_BI=1./(np.sqrt(abs(vel2_matrix))/Leff+tau_I**-1)
+	       if tau_I>1e-15:   #Cutoff to avoid numerical noise from the gamma value
+                   tau_BI=1./(np.sqrt(abs(vel2_matrix))/Leff+tau_I**-1)
                else:
-                       tau_BI=tau_I
+		   tau_I='nan'
+                   tau_BI=np.true_divide(Leff,np.sqrt(abs(vel2_matrix)), where=(np.sqrt(abs(vel2_matrix))!=0.))
           else:
-               if Leff!='inf':
-                    tau_B=np.true_divide(Leff,np.sqrt(abs(vel2_matrix)), where=(np.sqrt(abs(vel2_matrix))!=0.))
-                    tau_BI=tau_B
-       else:
-          if Leff!='inf':
                tau_B=np.true_divide(Leff,np.sqrt(abs(vel2_matrix)), where=(np.sqrt(abs(vel2_matrix))!=0.))
                tau_BI=tau_B
+       else:
+          tau_B=np.true_divide(Leff,np.sqrt(abs(vel2_matrix)), where=(np.sqrt(abs(vel2_matrix))!=0.))
+          tau_BI=tau_B
 
        if g_N!=0:
           tau_N=(2*3.14159265*2.*1.e12*g_N)**-1.0
@@ -464,6 +463,9 @@ for k in range(len(T)):
   ell_kin=np.sqrt((1-sigma)*v2tau_R*tau_R)
 
   ell=(ell_col+ell_kin)/1e-9  
+
+  print kappa_col*factor
+  print F
 
   k_col.append([(kappa_col*F)[i1][i2], Cv, sigma[i1][i2],(tau_col*v_int)[i1][i2]])
  
