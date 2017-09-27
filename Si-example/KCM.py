@@ -464,9 +464,6 @@ for k in range(len(T)):
 
   ell=(ell_col+ell_kin)/1e-9  
 
-  print kappa_col*factor
-  print F
-
   k_col.append([(kappa_col*F)[i1][i2], Cv, sigma[i1][i2],(tau_col*v_int)[i1][i2]])
  
   kappa_total=factor*(multiply(kappa_kin,(1.-sigma))+multiply(kappa_col,sigma)*F)
