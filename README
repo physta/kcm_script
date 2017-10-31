@@ -1,6 +1,6 @@
 Phono3py general script
 
-	$ phono3py --dim="2 2 2" --fc3 --fc2 --pa="0 1/2 1/2 1/2 0 1/2 1/2 1/2 0" -c POSCAR --mesh="20 20 20" --nu --ts="300" --isotope -o t300
+	$ phono3py --dim="2 2 2" --fc3 --fc2 --pa="0 1/2 1/2 1/2 0 1/2 1/2 1/2 0" -c POSCAR --mesh="20 20 20" --br --nu --ts="300" --isotope -o t300
 
 KCM general script
 
