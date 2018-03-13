@@ -432,7 +432,7 @@ for k in range(len(T)):
                k_w[-1].append([w,(Cv_mode*vel2_matrix*tau_k)[i1][i2], Cv_mode, T[k]])
        if K_MFP=='Y':
 	   if Leff!='inf':
-               k_mfp[-1].append([(vel_m*tau_k)[i1][i2],(Cv_mode*vel2_matrix*tau_k)[i1][i2], Cv_mode, T[k]])
+               k_mfp[-1].append([(vel_m*tau_k),(Cv_mode*vel2_matrix*tau_k)[i1][i2], Cv_mode, T[k]])
            else:
 	       k_mfp[-1].append([(vel_m*tau_k),(Cv_mode*vel2_matrix*tau_k)[i1][i2], Cv_mode, T[k]])
        if TAU_W=='Y':
