@@ -1,7 +1,7 @@
-TEMP= 300
+TEMP= 300 
 BOUNDARY= Y
-TYPE= W F
-L= 0.003 1e-5
+TYPE= W
+L= 0.003 
 I_SF= 1
 COMP= XX
 K_W= N 

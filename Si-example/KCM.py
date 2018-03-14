@@ -432,7 +432,7 @@ for k in range(len(T)):
                k_w[-1].append([w,(Cv_mode*vel2_matrix*tau_k)[i1][i2], Cv_mode, T[k]])
        if K_MFP=='Y':
 	   if Leff!='inf':
-               k_mfp[-1].append([(vel_m*tau_k),(Cv_mode*vel2_matrix*tau_k)[i1][i2], Cv_mode, T[k]])
+               k_mfp[-1].append([(vel_m*tau_k)[i1][i2],(Cv_mode*vel2_matrix*tau_k)[i1][i2], Cv_mode, T[k]])
            else:
 	       k_mfp[-1].append([(vel_m*tau_k),(Cv_mode*vel2_matrix*tau_k)[i1][i2], Cv_mode, T[k]])
        if TAU_W=='Y':
@@ -482,7 +482,7 @@ for k in range(len(T)):
   kappa_total=factor*(multiply(kappa_kin,(1.-sigma))+multiply(kappa_col,sigma)*F)
 
 
-  print T[k], ("    %8.3f     %8.3f      %8.3f    %8.3f    %.10f" % (kappa_total[i1][i2], ell[i1][i2], (factor*kappa_kin)[i1][i2], (factor*kappa_col)[i1][i2], sigma[i1][i2]))
+  print T[k], ("    %8.3f     %8.3f      %8.3f    %8.3f    %8.3f" % (kappa_total[i1][i2], ell[i1][i2], (factor*kappa_kin)[i1][i2], (factor*kappa_col)[i1][i2], sigma[i1][i2]))
 
   file.write('%s %s %s %s %s %s\n' %(T[k], kappa_total[i1][i2], ell[i1][i2], (factor*kappa_kin)[i1][i2], (factor*kappa_col*F)[i1][i2], sigma[i1][i2]))
 
