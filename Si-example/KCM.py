@@ -542,12 +542,12 @@ if K_MFP=='Y':
              file2.write('\n\n')
              for j in range(len(kmfp)):
                 sigma=k_col[i][2]
-		mfp_kin=kmfp[j][0]
-	 	mfp_col=k_col[i][3]
+		mfp_kin=kmfp[j][0]*(1-sigma)
+	 	mfp_col=k_col[i][3]*sigma
                 k_c=k_col[i][0]*factor
                 kk_mfp_acc+=kmfp[j][1]*factor
                 sigma=k_col[i][2]
-                mfp=kmfp[j][0]  
+                mfp=kmfp[j][0]*(1-sigma)  
 		if c==0 and mfp_col<mfp_kin:
 	             file2.write('%s %s %s %s %s %s %s %s \n' %(kmfp[j][-1], mfp, kmfp[j][1]*factor, k_c, kk_mfp_acc, k_c, sigma, kk_mfp_acc*(1.-sigma)+sigma*k_c))
 		     c=1
