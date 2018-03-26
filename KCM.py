@@ -195,7 +195,7 @@ print ' |   \    | |       | | \__/ | | '
 print ' | |\ \   | |       | |      | | '
 print ' | | \ \  | |_____  | |      | | '
 print ' |_|  \_\ |_______| |_|      |_| \n'
-print ' KINETIC  COLLECTIVE    MODEL    Version 1.0    ','\n'
+print ' KINETIC  COLLECTIVE    MODEL    Version 1.1    ','\n'
 print '--------------------------------- \n'
 print 'Running calculation of thermal conductivity on a ', str(mesh.value[0])+'x'+str(mesh.value[1])+'x'+str(mesh.value[2]) ,'mesh \n'
 
@@ -235,8 +235,18 @@ for i in list:
                 params.append([])
 	  	for j in range(len(a)-1):
   			params[-1].append(a[j+1])
+	
 	else:
-		params.append(a[1])
+  	   if a[0]=='L=':
+		params.append([])
+                for j in range(len(a)-1):
+       	                params[-1].append(a[j+1])
+           if a[0]=='TYPE=':
+                params.append([])
+                for j in range(len(a)-1):
+                        params[-1].append(a[j+1])
+	   if a[0]!='TEMP=' and a[0]!='L=' and a[0]!='TYPE=':
+ 		params.append(a[1])
 
 TEMP= params[0]
 Temp=[]
@@ -247,9 +257,6 @@ else:
    for i in TEMP:
       Temp.append(float(i))
 
-BOUNDARY= params[1]
-TYPE= params[2]
-L= float(params[3])
 I_SF= float(params[4])
 COMP= params[5]
 K_W= params[6]
@@ -258,89 +265,104 @@ TAU_W= params[8]
 TAU_T= params[9]
 STP= float(params[10])
 
-if BOUNDARY=='Y':
-  if TYPE=='W':
-        Leff=L
-  if TYPE=='R':
-        Leff=1.12*L
-  if TYPE=='F':
-        Leff=2.25*L
-else:
-  Leff='inf'
-
-if BOUNDARY=='Y':
-	prefix=TYPE+str(Leff)
-else:
-	prefix='bulk'
-
-if COMP=='XX':
-	i1=0
-	i2=0
-if COMP=='YY':
-        i1=1
-        i2=1
-if COMP=='ZZ':
-        i1=2
-        i2=2
-if COMP=='XY':
-        i1=0
-        i2=1
-if COMP=='XZ':
-        i1=0
-        i2=2
-if COMP=='YZ':
-        i1=1
-        i2=2
-
 grid=str(mesh.value[0])+str(mesh.value[1])+str(mesh.value[2])
 
-file=open('K_T_'+prefix+'_'+COMP+'_'+grid+'.dat','w')
-file.write("%s \n\n"%('# (1)T[k]  (2)k[W/mK]  (3)NL-param[nm]  (4)k*_kin[W/mK]  (5)k*_col[W/mK] (6)sigma[adim]'))
+BOUNDARY= params[1]
+TYPE= params[2]
+size= params[3]
 
-if K_W=='Y':
+for l in range(len(size)):
+ L= float(size[l])
+ if TYPE[l]=='W':
+       Leff=L
+ if TYPE[l]=='R':
+        Leff=1.12*L
+ if TYPE[l]=='F':
+        Leff=2.25*L
+ if BOUNDARY=='Y':
+        prefix=TYPE[l]+str(Leff)
+ else:
+	Leff='inf'
+	prefix='bulk'
+
+ print '\n Sample size= ', prefix, '\n'
+ 
+
+ if COMP=='XX':
+		i1=0
+		i2=0
+ if COMP=='YY':
+        	i1=1
+	        i2=1
+ if COMP=='ZZ':
+	        i1=2
+        	i2=2
+ if COMP=='XY':
+        	i1=0
+	        i2=1
+ if COMP=='XZ':
+        	i1=0
+	        i2=2
+ if COMP=='YZ':
+	        i1=1
+        	i2=2
+ 
+ file=open('K_T_'+prefix+'_'+COMP+'_'+grid+'.dat','w')
+ file.write("%s \n\n"%('# (1)T[k]  (2)k[W/mK]  (3)NL-param[nm]  (4)k*_kin[W/mK]  (5)k*_col[W/mK] (6)sigma[adim]'))
+
+ if K_W=='Y':
         file1=open('K_w_'+prefix+'_'+COMP+'_'+grid+'.dat','w')
         file1.write("%s \n"%('# (1)T[k]  (2)w[rad/s] (3)k*_kin[J/mK]  (4)k*_col[J/mK]  (5)k*_kin_acc[W/mK]  (6)k*_col_acc[W/mK]  (7)sigma[adim] (8)k_tot_acc[W/mK] (9)Cv_acc[J/m^3K]'))
         k_w=[]
-if K_MFP=='Y':
+ if K_MFP=='Y':
         file2=open('K_mfp_'+prefix+'_'+COMP+'_'+grid+'.dat','w')
         file2.write("%s \n"%('# (1)T[k]  (2)mfp[m]  (3)k*_kin[W/mK]  (4)k*_col[W/mK]  (5)k*_kin_acc[W/mK]  (6)k*_col_acc[W/mK]  (7)sigma[W/mK]  (8)k_tot_acc[W/mK]'))
         k_mfp=[]
-if TAU_W=='Y':
+ if TAU_W=='Y':
         file3=open('Taus_w_'+prefix+'_'+grid+'.dat','w')
         file3.write("%s \n"%('# (1)T[k]  (2)w[rad/s]  (3)tau_I[s]  (4)tau_U[s]  (5)tau_N[s]  (6)tau_B[s] (7)v_mode[m/s]'))
-if TAU_T=='Y':
+ if TAU_T=='Y':
         file4=open('Taus_T_'+prefix+'_'+COMP+'_'+grid+'.dat','w')
         file4.write("%s \n\n"%('# (1)T[k]  (2)tau_kin*[s]  (3)tau_col*[s]  (4)tau_N[s]  (5)sigma[adim] (6)vel_int'))
-	tau_T=[]
+        tau_T=[]
 
-print 'Temp[k]  Kappa[W/mK]  NL-length[nm] K_kin[W/mK]  K_col[W/mK] Sigma[adim]\n'
+ print 'Temp[k]  Kappa[W/mK]  NL-length[nm] K_kin[W/mK]  K_col[W/mK] Sigma[adim]\n'
 
-k_col=[]
+ k_col=[]
 
-for k in range(len(T)):
- if T[k] in Temp:
-  if K_W=='Y':
-     k_w.append([])
-  if K_MFP=='Y':
-     k_mfp.append([])
-  if TAU_W=='Y':
-     file3.write('\n\n')
-  
-  k_kin=0.
-  Cv_int=0.
-  v2Cv=0.
-  v_int_num=0.
-  tau_kin_den=0.
-  tau_n_num=0.
-  v2_N_num=0.
-  v2_N_den=0.
-  k_col_num=0.
-  k_col_den=0.
-  tau_col_num=0.
-  tau_col_den=0.
-  tau_k=0.
+ for k in range(len(T)):
+  if T[k] in Temp:
+   if K_W=='Y':
+	     k_w.append([])
+   if K_MFP=='Y':
+	     k_mfp.append([])
+   if TAU_W=='Y':
+	     file3.write('\n\n')
 
-  for j in range(len(qpoint)):
+   k_kin= array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
+   Cv_int=0.
+   v2Cv= array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
+   v_int_num = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
+   tau_kin_den = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
+   tau_n_num = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
+   v2_N_num = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
+   v2_N_den = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
+   k_col_num = 0.
+   k_col_den = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
+   tau_col_num = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
+   tau_col_den = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
+   tau_k= array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
+   tau_B= array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
+   tau_I= array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
+   tau_R= array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
+   v2_N= array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
+   F = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
+   kappa_col = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
+   tau_col = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
+   tau_BI = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
+
+
+   for j in range(len(qpoint)):
     for i in range(len(freq[j])):
        g_N=gamma_N[k][j][i]
        g_U=gamma_U[k][j][i]
@@ -365,19 +387,34 @@ for k in range(len(T)):
 
        if 'gamma_isotope' in f:
           if g_I!=0.:
-               tau_I=(2*3.14159265*2.*1.e12*g_I)**-1.0*I_SF
                if Leff!='inf':
-                       tau_BI=1./(np.sqrt(abs(vel2_matrix))/Leff+tau_I**-1)
+		       for d in range(len(vel2_matrix)):
+                           for c in range(len(vel2_matrix[d])):
+			       tau_I[d][c]=(2*3.14159265*2.*1.e12*g_I)**-1.0*I_SF
+			       if vel2_matrix[d][c]!=0:		
+		                       tau_BI[d][c]=1./(sqrt(abs(vel2_matrix[d][c]))/Leff+tau_I[d][c]**-1)
+			       else:
+					tau_BI[d][c] = tau_I[d][c]
                else:
-                       tau_BI=tau_I
+		  for d in range(len(tau_I)):
+                           for c in range(len(tau_I[d])):
+                               tau_BI[d][c]=(2*3.14159265*2.*1.e12*g_I)**-1.0*I_SF
+			       tau_I[d][c]=(2*3.14159265*2.*1.e12*g_I)**-1.0*I_SF
           else:
                if Leff!='inf':
-                    tau_B=np.true_divide(Leff,np.sqrt(abs(vel2_matrix)), where=(np.sqrt(abs(vel2_matrix))!=0.))
-                    tau_BI=tau_B
+		    for d in range(len(vel2_matrix)):
+			for c in range(len(vel2_matrix[d])):
+                          if vel2_matrix[d][c]!=0:
+	                    tau_B[d][c]=Leff/sqrt(abs(vel2_matrix[d][c]))
+        	            tau_BI[d][c]=tau_B[d][c]
        else:
           if Leff!='inf':
-               tau_B=np.true_divide(Leff,np.sqrt(abs(vel2_matrix)), where=(np.sqrt(abs(vel2_matrix))!=0.))
-               tau_BI=tau_B
+                    for d in range(len(vel2_matrix)):
+                        for c in range(len(vel2_matrix[d])):
+			  if vel2_matrix[d][c]!=0:
+                            tau_B[d][c]=Leff/sqrt(abs(vel2_matrix[d][c]))
+                            tau_BI[d][c]=tau_B[d][c]
+
 
        if g_N!=0:
           tau_N=(2*3.14159265*2.*1.e12*g_N)**-1.0
@@ -386,19 +423,26 @@ for k in range(len(T)):
           tau_n_num+=Cv_mode*tau_N
 
        if g_U!=0:
-          tau_U=(2*3.14159265*2.*1.e12*g_U)**-1.0
+	  tau_U=(2*3.14159265*2.*1.e12*g_U)**-1.0	
 	  if Leff!='inf':
-	          tau_k=(tau_U**-1.+np.true_divide(1,tau_BI, where=(tau_BI!=0.)))**-1.
+	     for d in range(len(tau_k)):
+                     for c in range(len(tau_k[d])):
+			if tau_BI[d][c]!=0.:
+			        tau_k[d][c]=(tau_U**-1.+tau_BI[d][c]**-1)**-1.
 	  else:
-            if tau_I!='nan':
-		  tau_k=(tau_U**-1.+tau_I**-1.)**-1.
-	    else:
-		  tau_k=tau_U		  
+		for d in range(len(tau_k)):
+                     for c in range(len(tau_k[d])):
+                          if tau_I[d][c]!=0.:
+		  		tau_k[d][c]=(tau_U**-1.+tau_I[d][c]**-1.)**-1.
+	    		  else:
+	               		 tau_k[d][c]=tau_U		  
           k_kin+=Cv_mode*vel2_matrix*tau_k
           k_col_num+=Cv_mode*q_vec*vel_vec/w
-	  if tau_I!='nan':
-	          k_col_den+=(tau_U**-1.+tau_I**-1.)*Cv_mode*C1
-		  tau_col_den+=(tau_U**-1.+tau_I**-1.)*Cv_mode*C1
+	  for d in range(len(k_col_den)):
+              for c in range(len(k_col_den[d])):
+	             if tau_U!=0. and tau_I[d][c]!=0.:
+		          	k_col_den[d][c]+=(tau_U**-1.+tau_I[d][c]**-1.)*Cv_mode*C1[d][c]
+	                        tau_col_den[d][c]+=(tau_U**-1.+tau_I[d][c]**-1.)*Cv_mode*C1[d][c]
           else:
 		   k_col_den+=tau_U**-1.*Cv_mode*C1
                    tau_col_den+=tau_U**-1.*Cv_mode*C1
@@ -407,20 +451,23 @@ for k in range(len(T)):
         if Leff!='inf':
           tau_k=tau_BI
           k_kin+=Cv_mode*vel2_matrix*tau_k
-          if tau_I!='nan':
-                  k_col_num+=Cv_mode*q_vec*vel_vec/w
-                  k_col_den+=tau_I**-1.*Cv_mode*C1
-                  tau_col_num+=Cv_mode*C1
-                  tau_col_den+=tau_I**-1.*Cv_mode*C1
+          k_col_num+=Cv_mode*q_vec*vel_vec/w
+          tau_col_num+=Cv_mode*C1
+	  for d in range(len(tau_I)):
+                        for c in range(len(tau_I[d])): 
+			    if tau_I[d][c]!=0.:	
+                               k_col_den[d][c]+=tau_I[d][c]**-1.*Cv_mode*C1[d][c]
+	                       tau_col_den[d][c]+=tau_I[d][c]**-1.*Cv_mode*C1[d][c]
         else:
-          if tau_I!='nan':
             tau_k=tau_I
             k_kin+=Cv_mode*vel2_matrix*tau_k
             k_col_num+=Cv_mode*q_vec*vel_vec/w
-            k_col_den+=tau_I**-1.*Cv_mode*C1
             tau_col_num+=Cv_mode*C1
-            tau_col_den+=tau_I**-1.*Cv_mode*C1
-
+	    for d in range(len(k_col_den)):
+                        for c in range(len(k_col_den[d])):
+			     if tau_I[d][c]!=0.:	
+            			k_col_den[d][c]+=tau_I[d][c]**-1.*Cv_mode*C1[d][c]
+			        tau_col_den[d][c]+=tau_I[d][c]**-1.*Cv_mode*C1[d][c]
 
        v2Cv+=Cv_mode*(vel2_matrix)
 
@@ -432,69 +479,71 @@ for k in range(len(T)):
                k_w[-1].append([w,(Cv_mode*vel2_matrix*tau_k)[i1][i2], Cv_mode, T[k]])
        if K_MFP=='Y':
 	   if Leff!='inf':
-               k_mfp[-1].append([(vel_m*tau_k)[i1][i2],(Cv_mode*vel2_matrix*tau_k)[i1][i2], Cv_mode, T[k]])
+               k_mfp[-1].append([(vel_m*tau_k[i1][i2]),(Cv_mode*vel2_matrix*tau_k)[i1][i2], Cv_mode, T[k]])
            else:
-	       k_mfp[-1].append([(vel_m*tau_k),(Cv_mode*vel2_matrix*tau_k)[i1][i2], Cv_mode, T[k]])
+	       k_mfp[-1].append([(vel_m*tau_k[i1][i2]),(Cv_mode*vel2_matrix*tau_k)[i1][i2], Cv_mode, T[k]])
        if TAU_W=='Y':
-               if Leff!='inf':
-	           file3.write("%s %s %s %s %s %s %s\n"%(T[k], w, tau_I, tau_U, tau_N, np.true_divide(Leff,linalg.norm(vel_vec), where=(linalg.norm(vel_vec)!=0.)), linalg.norm(vel_vec)))
+               if Leff!='inf' and linalg.norm(vel_vec)!=0:
+	           file3.write("%s %s %s %s %s %s %s\n"%(T[k], w, tau_I, tau_U, tau_N, Leff/linalg.norm(vel_vec), linalg.norm(vel_vec)))
                else:
                    file3.write("%s %s %s %s %s %s %s\n"%(T[k], w, tau_I, tau_U, tau_N, 'inf', linalg.norm(vel_vec)))
 
-  for i in range(3): # To avoid numerical errors
+   for i in range(3): # To avoid numerical errors
       for j in range(3):
        if factor*k_kin[i][j]<1e-5:
             k_kin[i][j]=0.
 
-  Cv=Cv_int
+   Cv=Cv_int
 
-  tau_R=np.true_divide(k_kin,abs(v2Cv), where=(v2Cv!=0.))
-  tau_N=tau_n_num/Cv
-  v2_N=np.true_divide(v2_N_num,v2_N_den, where=(v2_N_den!=0.))
+   landa2=multiply(tau_col,v2_N)
 
-  v_int=np.sqrt(abs(v_int_num)/Cv)
+   for d in range(len(tau_R)):
+	for c in range(len(tau_R[d])):
+		  tau_R[d][c] = k_kin[d][c]/abs(v2Cv)[d][c]
+                  v2_N[d][c]= v2_N_num[d][c]/v2_N_den[d][c]
+		  kappa_col[d][c]=outer(k_col_num, k_col_num)[d][c]/k_col_den[d][c]
+                  tau_col[d][c]=tau_col_num[d][c]/tau_col_den[d][c]	
+	          landa2[d][c] = tau_col[d][c]*v2_N[d][c]	
+		  if Leff!='inf':
+		      if Leff<1.:
+			  if landa2[d][c]!=0:
+				  F[d][c] = 1./(2*pi**2.)*Leff**2.*(np.sqrt(1.+4.*pi**2.*abs(landa2[d][c])/Leff**2)-1.)/abs(landa2[d][c])
+		      else:
+		         F=1.
+                  else:
+		        F=1.
 
-  sigma=tau_R/(tau_R+tau_N)     #(1./(1.+tau_N/(tau_R)))
+   tau_N=tau_n_num/Cv
 
-  kappa_kin=k_kin
-  kappa_col=np.divide(outer(k_col_num, k_col_num),k_col_den, where=(k_col_den!=0.))
+   v_int=np.sqrt(abs(v_int_num)/Cv)
 
-  tau_col=np.divide(tau_col_num,tau_col_den, where=(tau_col_den!=0.)) 
+   sigma=tau_R/(tau_R+tau_N)     #(1./(1.+tau_N/(tau_R)))
 
-  landa2=multiply(tau_col,v2_N)
+   kappa_kin=k_kin
 
-  if Leff!='inf':
-      if Leff<1.:
-         F=np.true_divide(1./(2*pi**2.)*Leff**2.*(np.sqrt(1.+4.*pi**2.*landa2/Leff**2)-1.), landa2, where=(landa2!=0.))
-      else:
-         F=1.
-  else:
-	F=1.
+   ell_col=np.sqrt(sigma*v2_N*tau_col)
+   v2tau_R=k_kin/Cv
+   ell_kin=np.sqrt((1-sigma)*v2tau_R*tau_R)
 
-  ell_col=np.sqrt(sigma*v2_N*tau_col)
-  v2tau_R=k_kin/Cv
-  ell_kin=np.sqrt((1-sigma)*v2tau_R*tau_R)
+   ell=(ell_col+ell_kin)/1e-9  
 
-  ell=(ell_col+ell_kin)/1e-9  
+   k_col.append([(kappa_col*F)[i1][i2], Cv, sigma[i1][i2],(tau_col*v_int)[i1][i2]])
 
-  k_col.append([(kappa_col*F)[i1][i2], Cv, sigma[i1][i2],(tau_col*v_int)[i1][i2]])
- 
-  kappa_total=factor*(multiply(kappa_kin,(1.-sigma))+multiply(kappa_col,sigma)*F)
+   kappa_total=factor*(multiply(kappa_kin,(1.-sigma))+multiply(kappa_col,sigma)*F)
 
+   print T[k], ("    %8.3f     %8.3f      %8.3f    %8.3f    %.10f" % (kappa_total[i1][i2], ell[i1][i2], (factor*kappa_kin)[i1][i2], (factor*kappa_col)[i1][i2], sigma[i1][i2]))
 
-  print T[k], ("    %8.3f     %8.3f      %8.3f    %8.3f    %8.3f" % (kappa_total[i1][i2], ell[i1][i2], (factor*kappa_kin)[i1][i2], (factor*kappa_col)[i1][i2], sigma[i1][i2]))
+   file.write('%s %s %s %s %s %s\n' %(T[k], kappa_total[i1][i2], ell[i1][i2], (factor*kappa_kin)[i1][i2], (factor*kappa_col*F)[i1][i2], sigma[i1][i2]))
 
-  file.write('%s %s %s %s %s %s\n' %(T[k], kappa_total[i1][i2], ell[i1][i2], (factor*kappa_kin)[i1][i2], (factor*kappa_col*F)[i1][i2], sigma[i1][i2]))
-
-  if TAU_T=='Y':
+   if TAU_T=='Y':
 	  file4.write('%s %s %s %s %s %s\n' %(T[k], tau_R[i1][i2], tau_col[i1][i2], tau_N, sigma[i1][i2], v_int[i1][i2]))
 
-print '\n', '--------------------------------- \n', 'Calculation done', '\n'
+ print '\n', '--------------------------------- \n', 'Calculation done', '\n'
 
-if K_W=='Y' or K_MFP=='Y' or TAU_W=='Y' or TAU_T=='Y':
+ if K_W=='Y' or K_MFP=='Y' or TAU_W=='Y' or TAU_T=='Y':
         print '------>' , ' Writting output files'
 
-if K_W=='Y':
+ if K_W=='Y':
      lw=[]
      stp=int(STP)
      for i in range(len(k_w[0])):
@@ -533,7 +582,7 @@ if K_W=='Y':
         	file1.write('%s %s %s %s %s %s %s %s %s\n' %(k_w[i][j][-1], new_l[i][j][0], new_l[i][j][1], new_l[i][j][2], acc_kin, acc_col, k_col[i][2], acc_kin*(1.-k_col[i][2])+k_col[i][2]*acc_col, new_cv*factor))
      file1.close()
 
-if K_MFP=='Y':
+ if K_MFP=='Y':
      for i in range(len(k_mfp)):
 	     c=0
 	     kmfp=sorted(k_mfp[i])
@@ -542,12 +591,12 @@ if K_MFP=='Y':
              file2.write('\n\n')
              for j in range(len(kmfp)):
                 sigma=k_col[i][2]
-		mfp_kin=kmfp[j][0]*(1-sigma)
-	 	mfp_col=k_col[i][3]*sigma
+		mfp_kin=kmfp[j][0]
+	 	mfp_col=k_col[i][3]
                 k_c=k_col[i][0]*factor
                 kk_mfp_acc+=kmfp[j][1]*factor
                 sigma=k_col[i][2]
-                mfp=kmfp[j][0]*(1-sigma)  
+                mfp=kmfp[j][0]  
 		if c==0 and mfp_col<mfp_kin:
 	             file2.write('%s %s %s %s %s %s %s %s \n' %(kmfp[j][-1], mfp, kmfp[j][1]*factor, k_c, kk_mfp_acc, k_c, sigma, kk_mfp_acc*(1.-sigma)+sigma*k_c))
 		     c=1
@@ -557,15 +606,15 @@ if K_MFP=='Y':
                      file2.write('%s %s %s %s %s %s %s %s \n' %(kmfp[j][-1], mfp, kmfp[j][1]*factor, '0.' ,kk_mfp_acc, '0.', sigma, kk_mfp_acc*(1.-sigma)))
      file2.close() 
 
-if K_W=='Y' or K_MFP=='Y' or TAU_W=='Y' or TAU_T=='Y':
+ if K_W=='Y' or K_MFP=='Y' or TAU_W=='Y' or TAU_T=='Y':
         print '                  |'
         print '                  |'
         print '                  V'
         print '                Done','\n'
 
-if TAU_W=='Y':
+ if TAU_W=='Y':
      file3.close()
-if TAU_T=='Y':
+ if TAU_T=='Y':
      file4.close()
 
-file.close()
+ file.close()
