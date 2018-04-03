@@ -351,16 +351,10 @@ for l in range(len(size)):
    k_col_den = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
    tau_col_num = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
    tau_col_den = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
-   tau_k= array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
-   tau_B= array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
-   tau_I= array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
-   tau_R= array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
    v2_N= array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
    F = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
    kappa_col = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
-   tau_col = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
-   tau_BI = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
-
+   tau_k = 0
 
    for j in range(len(qpoint)):
     for i in range(len(freq[j])):
@@ -386,35 +380,9 @@ for l in range(len(size)):
        C1=q2_matrix/w**2.   #projection factor
 
        if 'gamma_isotope' in f:
-          if g_I!=0.:
-               if Leff!='inf':
-		       for d in range(len(vel2_matrix)):
-                           for c in range(len(vel2_matrix[d])):
-			       tau_I[d][c]=(2*3.14159265*2.*1.e12*g_I)**-1.0*I_SF
-			       if vel2_matrix[d][c]!=0:		
-		                       tau_BI[d][c]=1./(sqrt(abs(vel2_matrix[d][c]))/Leff+tau_I[d][c]**-1)
-			       else:
-					tau_BI[d][c] = tau_I[d][c]
-               else:
-		  for d in range(len(tau_I)):
-                           for c in range(len(tau_I[d])):
-                               tau_BI[d][c]=(2*3.14159265*2.*1.e12*g_I)**-1.0*I_SF
-			       tau_I[d][c]=(2*3.14159265*2.*1.e12*g_I)**-1.0*I_SF
-          else:
-               if Leff!='inf':
-		    for d in range(len(vel2_matrix)):
-			for c in range(len(vel2_matrix[d])):
-                          if vel2_matrix[d][c]!=0:
-	                    tau_B[d][c]=Leff/sqrt(abs(vel2_matrix[d][c]))
-        	            tau_BI[d][c]=tau_B[d][c]
+	  g_kin = g_I + g_U
        else:
-          if Leff!='inf':
-                    for d in range(len(vel2_matrix)):
-                        for c in range(len(vel2_matrix[d])):
-			  if vel2_matrix[d][c]!=0:
-                            tau_B[d][c]=Leff/sqrt(abs(vel2_matrix[d][c]))
-                            tau_BI[d][c]=tau_B[d][c]
-
+	  g_kin = g_U
 
        if g_N!=0:
           tau_N=(2*3.14159265*2.*1.e12*g_N)**-1.0
@@ -422,52 +390,17 @@ for l in range(len(size)):
           v2_N_den+=Cv_mode*C1
           tau_n_num+=Cv_mode*tau_N
 
-       if g_U!=0:
-	  tau_U=(2*3.14159265*2.*1.e12*g_U)**-1.0	
+       if g_kin!=0:
+	  tau_k=(2*3.14159265*2.*1.e12*g_kin)**-1.0	
 	  if Leff!='inf':
-	     for d in range(len(tau_k)):
-                     for c in range(len(tau_k[d])):
-			if tau_BI[d][c]!=0.:
-			        tau_k[d][c]=(tau_U**-1.+tau_BI[d][c]**-1)**-1.
+	     tau_k=(2*3.14159265*2.*1.e12*g_kin + vel_m/Leff)**-1.0	
 	  else:
-		for d in range(len(tau_k)):
-                     for c in range(len(tau_k[d])):
-                          if tau_I[d][c]!=0.:
-		  		tau_k[d][c]=(tau_U**-1.+tau_I[d][c]**-1.)**-1.
-	    		  else:
-	               		 tau_k[d][c]=tau_U		  
+	     tau_k=(2*3.14159265*2.*1.e12*g_kin)**-1.0
           k_kin+=Cv_mode*vel2_matrix*tau_k
           k_col_num+=Cv_mode*q_vec*vel_vec/w
-	  for d in range(len(k_col_den)):
-              for c in range(len(k_col_den[d])):
-	             if tau_U!=0. and tau_I[d][c]!=0.:
-		          	k_col_den[d][c]+=(tau_U**-1.+tau_I[d][c]**-1.)*Cv_mode*C1[d][c]
-	                        tau_col_den[d][c]+=(tau_U**-1.+tau_I[d][c]**-1.)*Cv_mode*C1[d][c]
-          else:
-		   k_col_den+=tau_U**-1.*Cv_mode*C1
-                   tau_col_den+=tau_U**-1.*Cv_mode*C1
-          tau_col_num+=Cv_mode*C1
-       else:
-        if Leff!='inf':
-          tau_k=tau_BI
-          k_kin+=Cv_mode*vel2_matrix*tau_k
-          k_col_num+=Cv_mode*q_vec*vel_vec/w
-          tau_col_num+=Cv_mode*C1
-	  for d in range(len(tau_I)):
-                        for c in range(len(tau_I[d])): 
-			    if tau_I[d][c]!=0.:	
-                               k_col_den[d][c]+=tau_I[d][c]**-1.*Cv_mode*C1[d][c]
-	                       tau_col_den[d][c]+=tau_I[d][c]**-1.*Cv_mode*C1[d][c]
-        else:
-            tau_k=tau_I
-            k_kin+=Cv_mode*vel2_matrix*tau_k
-            k_col_num+=Cv_mode*q_vec*vel_vec/w
-            tau_col_num+=Cv_mode*C1
-	    for d in range(len(k_col_den)):
-                        for c in range(len(k_col_den[d])):
-			     if tau_I[d][c]!=0.:	
-            			k_col_den[d][c]+=tau_I[d][c]**-1.*Cv_mode*C1[d][c]
-			        tau_col_den[d][c]+=tau_I[d][c]**-1.*Cv_mode*C1[d][c]
+	  k_col_den+=(2*3.14159265*2.*1.e12*g_kin)*Cv_mode*C1
+	  tau_col_den+=(2*3.14159265*2.*1.e12*g_kin)*Cv_mode*C1
+	  tau_col_num+=Cv_mode*C1
 
        v2Cv+=Cv_mode*(vel2_matrix)
 
@@ -479,9 +412,9 @@ for l in range(len(size)):
                k_w[-1].append([w,(Cv_mode*vel2_matrix*tau_k)[i1][i2], Cv_mode, T[k]])
        if K_MFP=='Y':
 	   if Leff!='inf':
-               k_mfp[-1].append([(vel_m*tau_k[i1][i2]),(Cv_mode*vel2_matrix*tau_k)[i1][i2], Cv_mode, T[k]])
+               k_mfp[-1].append([(vel_m*tau_k),(Cv_mode*vel2_matrix*tau_k)[i1][i2], Cv_mode, T[k]])
            else:
-	       k_mfp[-1].append([(vel_m*tau_k[i1][i2]),(Cv_mode*vel2_matrix*tau_k)[i1][i2], Cv_mode, T[k]])
+	       k_mfp[-1].append([(vel_m*tau_k),(Cv_mode*vel2_matrix*tau_k)[i1][i2], Cv_mode, T[k]])
        if TAU_W=='Y':
                if Leff!='inf' and linalg.norm(vel_vec)!=0:
 	           file3.write("%s %s %s %s %s %s %s\n"%(T[k], w, tau_I, tau_U, tau_N, Leff/linalg.norm(vel_vec), linalg.norm(vel_vec)))
@@ -495,23 +428,21 @@ for l in range(len(size)):
 
    Cv=Cv_int
 
-   landa2=multiply(tau_col,v2_N)
+   tau_col=tau_col_num/tau_col_den
 
-   for d in range(len(tau_R)):
-	for c in range(len(tau_R[d])):
-		  tau_R[d][c] = k_kin[d][c]/abs(v2Cv)[d][c]
-                  v2_N[d][c]= v2_N_num[d][c]/v2_N_den[d][c]
-		  kappa_col[d][c]=outer(k_col_num, k_col_num)[d][c]/k_col_den[d][c]
-                  tau_col[d][c]=tau_col_num[d][c]/tau_col_den[d][c]	
-	          landa2[d][c] = tau_col[d][c]*v2_N[d][c]	
-		  if Leff!='inf':
-		      if Leff<1.:
-			  if landa2[d][c]!=0:
-				  F[d][c] = 1./(2*pi**2.)*Leff**2.*(np.sqrt(1.+4.*pi**2.*abs(landa2[d][c])/Leff**2)-1.)/abs(landa2[d][c])
-		      else:
-		         F=1.
-                  else:
-		        F=1.
+   tau_R = k_kin/abs(v2Cv)
+   v2_N= v2_N_num/v2_N_den
+   kappa_col=outer(k_col_num, k_col_num)/k_col_den
+
+   landa2=tau_col*v2_N
+
+   if Leff!='inf':
+      if Leff<1.:
+		  F = 1./(2*pi**2.)*Leff**2.*(np.sqrt(1.+4.*pi**2.*abs(landa2)/Leff**2)-1.)/abs(landa2)
+      else:
+         F=1.
+   else:
+        F=1.
 
    tau_N=tau_n_num/Cv
 
@@ -529,7 +460,7 @@ for l in range(len(size)):
 
    k_col.append([(kappa_col*F)[i1][i2], Cv, sigma[i1][i2],(tau_col*v_int)[i1][i2]])
 
-   kappa_total=factor*(multiply(kappa_kin,(1.-sigma))+multiply(kappa_col,sigma)*F)
+   kappa_total=factor*(kappa_kin*(1.-sigma)+kappa_col*sigma*F)
 
    print T[k], ("    %8.3f     %8.3f      %8.3f    %8.3f    %.10f" % (kappa_total[i1][i2], ell[i1][i2], (factor*kappa_kin)[i1][i2], (factor*kappa_col)[i1][i2], sigma[i1][i2]))
 
