@@ -195,7 +195,7 @@ print ' |   \    | |       | | \__/ | | '
 print ' | |\ \   | |       | |      | | '
 print ' | | \ \  | |_____  | |      | | '
 print ' |_|  \_\ |_______| |_|      |_| \n'
-print ' KINETIC  COLLECTIVE    MODEL    Version 1.2    ','\n'
+print ' KINETIC  COLLECTIVE    MODEL    Version 1.1    ','\n'
 print '--------------------------------- \n'
 print 'Running calculation of thermal conductivity on a ', str(mesh.value[0])+'x'+str(mesh.value[1])+'x'+str(mesh.value[2]) ,'mesh \n'
 
@@ -219,11 +219,7 @@ kb=1.38e-23
 
 ## Default values
 
-tau_I='nan'
-tau_U='nan'
 tau_N='nan'
-tau_B='nan'
-tau_BI='nan'
 
 file=open('INPUT','r')
 list=file.readlines()
@@ -425,9 +421,9 @@ for l in range(len(size)):
 	       k_mfp[-1].append([(vel_m*tau_k),(Cv_mode*vel2_matrix*tau_k)[i1][i2], Cv_mode, T[k]])
        if TAU_W=='Y':
                if Leff!='inf' and linalg.norm(vel_vec)!=0:
-	           file3.write("%s %s %s %s %s %s %s\n"%(T[k], w, tau_I, tau_U, tau_N, Leff/linalg.norm(vel_vec), linalg.norm(vel_vec)))
+	           file3.write("%s %s %s %s %s %s %s\n"%(T[k], w, (2*3.14159265*2.*1.e12*g_I*I_SF)**-1.0, (2*3.14159265*2.*1.e12*g_U)**-1.0, tau_N, Leff/linalg.norm(vel_vec), linalg.norm(vel_vec)))
                else:
-                   file3.write("%s %s %s %s %s %s %s\n"%(T[k], w, tau_I, tau_U, tau_N, 'inf', linalg.norm(vel_vec)))
+                   file3.write("%s %s %s %s %s %s %s\n"%(T[k], w, (2*3.14159265*2.*1.e12*g_I*I_SF)**-1.0, (2*3.14159265*2.*1.e12*g_U)**-1.0,, tau_N, 'inf', linalg.norm(vel_vec)))
 
    for i in range(3): # To avoid numerical errors
       for j in range(3):
