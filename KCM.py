@@ -220,6 +220,9 @@ kb=1.38e-23
 ## Default values
 
 tau_N='nan'
+tau_U='nan'
+tau_I='nan'
+tau_B='nan'
 
 file=open('INPUT','r')
 list=file.readlines()
@@ -421,9 +424,12 @@ for l in range(len(size)):
 	       k_mfp[-1].append([(vel_m*tau_k),(Cv_mode*vel2_matrix*tau_k)[i1][i2], Cv_mode, T[k]])
        if TAU_W=='Y':
                if Leff!='inf' and linalg.norm(vel_vec)!=0:
-	           file3.write("%s %s %s %s %s %s %s\n"%(T[k], w, (2*3.14159265*2.*1.e12*g_I*I_SF)**-1.0, (2*3.14159265*2.*1.e12*g_U)**-1.0, tau_N, Leff/linalg.norm(vel_vec), linalg.norm(vel_vec)))
-               else:
-                   file3.write("%s %s %s %s %s %s %s\n"%(T[k], w, (2*3.14159265*2.*1.e12*g_I*I_SF)**-1.0, (2*3.14159265*2.*1.e12*g_U)**-1.0,, tau_N, 'inf', linalg.norm(vel_vec)))
+		   tau_B=Leff/linalg.norm(vel_vec)
+	       if g_I!=0:
+		   tau_I=(2*3.14159265*2.*1.e12*g_I*I_SF)**-1.0,
+	       if g_U!=0:
+		   tau_U=(2*3.14159265*2.*1.e12*g_U)**-1.0
+	       file3.write("%s %s %s %s %s %s %s\n"%(T[k], w, tau_I, tau_U, tau_N, tau_B, linalg.norm(vel_vec)))
 
    for i in range(3): # To avoid numerical errors
       for j in range(3):
