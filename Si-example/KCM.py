@@ -426,7 +426,7 @@ for l in range(len(size)):
                if Leff!='inf' and linalg.norm(vel_vec)!=0:
 		   tau_B=Leff/linalg.norm(vel_vec)
 	       if g_I!=0 and I_SF!=0.:
-		   tau_I=(2*3.14159265*2.*1.e12*g_I*I_SF)**-1.0,
+		   tau_I=(2*3.14159265*2.*1.e12*g_I*I_SF)**-1.0
 	       if g_U!=0:
 		   tau_U=(2*3.14159265*2.*1.e12*g_U)**-1.0
 	       file3.write("%s %s %s %s %s %s %s\n"%(T[k], w, tau_I, tau_U, tau_N, tau_B, linalg.norm(vel_vec)))
