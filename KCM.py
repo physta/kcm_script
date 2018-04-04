@@ -351,9 +351,6 @@ for l in range(len(size)):
    k_col_den = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
    tau_col_num = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
    tau_col_den = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
-   v2_N= array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
-   F = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
-   kappa_col = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
    tau_k = 0
 
    for j in range(len(qpoint)):
