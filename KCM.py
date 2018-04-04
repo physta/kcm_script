@@ -195,7 +195,7 @@ print ' |   \    | |       | | \__/ | | '
 print ' | |\ \   | |       | |      | | '
 print ' | | \ \  | |_____  | |      | | '
 print ' |_|  \_\ |_______| |_|      |_| \n'
-print ' KINETIC  COLLECTIVE    MODEL    Version 1.1    ','\n'
+print ' KINETIC  COLLECTIVE    MODEL    Version 1.2    ','\n'
 print '--------------------------------- \n'
 print 'Running calculation of thermal conductivity on a ', str(mesh.value[0])+'x'+str(mesh.value[1])+'x'+str(mesh.value[2]) ,'mesh \n'
 
@@ -308,7 +308,7 @@ for l in range(len(size)):
         	i2=2
  
  file=open('K_T_'+prefix+'_'+COMP+'_'+grid+'.dat','w')
- file.write("%s \n\n"%('# (1)T[k]  (2)k[W/mK]  (3)NL-param[nm]  (4)k*_kin[W/mK]  (5)k*_col[W/mK] (6)sigma[adim]'))
+ file.write("%s \n\n"%('# (1)T[k]  (2)k_KCM[W/mK]  (3)NL-param[nm]  (4)k*_kin[W/mK]  (5)k*_col[W/mK] (6)sigma[adim]  (7)k_RTA[W/mK]'))
 
  if K_W=='Y':
         file1=open('K_w_'+prefix+'_'+COMP+'_'+grid+'.dat','w')
@@ -326,7 +326,7 @@ for l in range(len(size)):
         file4.write("%s \n\n"%('# (1)T[k]  (2)tau_kin*[s]  (3)tau_col*[s]  (4)tau_N[s]  (5)sigma[adim] (6)vel_int'))
         tau_T=[]
 
- print 'Temp[k]  Kappa[W/mK]  NL-length[nm] K_kin[W/mK]  K_col[W/mK] Sigma[adim]\n'
+ print 'Temp[k]  Kappa_KCM[W/mK]  NL-length[nm] K_kin[W/mK]  K_col[W/mK] Sigma[adim]  Kappa_RTA[W/mK]\n'
 
  k_col=[]
 
@@ -353,6 +353,8 @@ for l in range(len(size)):
    tau_col_den = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
    tau_k = 0
 
+   k_rta = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
+
    for j in range(len(qpoint)):
     for i in range(len(freq[j])):
        g_N=gamma_N[k][j][i]
@@ -377,9 +379,11 @@ for l in range(len(size)):
        C1=q2_matrix/w**2.   #projection factor
 
        if 'gamma_isotope' in f:
-	  g_kin = g_I + g_U
+	  g_kin = g_I*I_SF + g_U
+          g_rta = g_I*I_SF + g_U + g_N
        else:
 	  g_kin = g_U
+          g_rta = g_U + g_N
 
        if g_N!=0:
           tau_N=(2*3.14159265*2.*1.e12*g_N)**-1.0
@@ -398,6 +402,13 @@ for l in range(len(size)):
 	  k_col_den+=(2*3.14159265*2.*1.e12*g_kin)*Cv_mode*C1
 	  tau_col_den+=(2*3.14159265*2.*1.e12*g_kin)*Cv_mode*C1
 	  tau_col_num+=Cv_mode*C1
+
+       if g_rta!=0.:
+          if Leff!='inf':
+             tau_rta=(2*3.14159265*2.*1.e12*g_rta + vel_m/Leff)**-1.0
+	  else:
+	      tau_rta = (2*3.14159265*2.*1.e12*g_rta)**-1.0
+	  k_rta += Cv_mode*vel2_matrix*tau_rta
 
        v2Cv+=Cv_mode*(vel2_matrix)
 
@@ -459,9 +470,9 @@ for l in range(len(size)):
 
    kappa_total=factor*(kappa_kin*(1.-sigma)+kappa_col*sigma*F)
 
-   print T[k], ("    %8.3f     %8.3f      %8.3f    %8.3f    %.10f" % (kappa_total[i1][i2], ell[i1][i2], (factor*kappa_kin)[i1][i2], (factor*kappa_col)[i1][i2], sigma[i1][i2]))
+   print T[k], ("     %8.3f         %8.3f     %8.3f    %8.3f    %.10f   %8.3f" % (kappa_total[i1][i2], ell[i1][i2], (factor*kappa_kin)[i1][i2], (factor*kappa_col*F)[i1][i2], sigma[i1][i2], k_rta[i1][i2]*factor))
 
-   file.write('%s %s %s %s %s %s\n' %(T[k], kappa_total[i1][i2], ell[i1][i2], (factor*kappa_kin)[i1][i2], (factor*kappa_col*F)[i1][i2], sigma[i1][i2]))
+   file.write('%s %s %s %s %s %s %s\n' %(T[k], kappa_total[i1][i2], ell[i1][i2], (factor*kappa_kin)[i1][i2], (factor*kappa_col*F)[i1][i2], sigma[i1][i2], k_rta[i1][i2]*factor))
 
    if TAU_T=='Y':
 	  file4.write('%s %s %s %s %s %s\n' %(T[k], tau_R[i1][i2], tau_col[i1][i2], tau_N, sigma[i1][i2], v_int[i1][i2]))
