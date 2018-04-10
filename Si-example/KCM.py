@@ -360,6 +360,8 @@ for l in range(len(size)):
        g_U=gamma_U[k][j][i]
        if 'gamma_isotope' in f:
           g_I=gamma_I[j][i]
+       else:
+	  g_I=0.
        w=freq[j][i]*1.e12*2.*pi   # rads/s
        vx=vel[j][i][0]*100.  # ( THz * Angstrom ) --> m/s
        vy=vel[j][i][1]*100.
