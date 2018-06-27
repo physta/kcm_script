@@ -195,7 +195,7 @@ print ' |   \    | |       | | \__/ | | '
 print ' | |\ \   | |       | |      | | '
 print ' | | \ \  | |_____  | |      | | '
 print ' |_|  \_\ |_______| |_|      |_| \n'
-print ' KINETIC  COLLECTIVE    MODEL    Version 1.1    ','\n'
+print ' KINETIC  COLLECTIVE    MODEL    Version 1.2    ','\n'
 print '--------------------------------- \n'
 print 'Running calculation of thermal conductivity on a ', str(mesh.value[0])+'x'+str(mesh.value[1])+'x'+str(mesh.value[2]) ,'mesh \n'
 
@@ -343,7 +343,7 @@ for l in range(len(size)):
    v2Cv= array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
    v_int_num = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
    tau_kin_den = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
-   tau_n_num = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
+   tau_n_num = 0.
    v2_N_num = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
    v2_N_den = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
    k_col_num = 0.
