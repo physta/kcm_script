@@ -343,7 +343,7 @@ for l in range(len(size)):
    v2Cv= array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
    v_int_num = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
    tau_kin_den = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
-   tau_n_num = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
+   tau_n_num = 0.
    v2_N_num = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
    v2_N_den = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
    k_col_num = 0.
