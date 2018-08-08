@@ -195,12 +195,14 @@ print ' |   \    | |       | | \__/ | | '
 print ' | |\ \   | |       | |      | | '
 print ' | | \ \  | |_____  | |      | | '
 print ' |_|  \_\ |_______| |_|      |_| \n'
-print ' KINETIC  COLLECTIVE    MODEL    Version 1.2    ','\n'
+print ' KINETIC  COLLECTIVE    MODEL    Version 1.0    ','\n'
 print '--------------------------------- \n'
 print 'Running calculation of thermal conductivity on a ', str(mesh.value[0])+'x'+str(mesh.value[1])+'x'+str(mesh.value[2]) ,'mesh \n'
 
 
 V=(1.e12*1.e-10)**2*1.602e-19/(2.*pi*(k_conv.value)*1.e12)
+
+print 'Volume = ', V
 
 ## Cell vectors
 
@@ -214,15 +216,18 @@ N=mesh[0]*mesh[1]*mesh[2]
 
 factor=(1./(V*N))  # Normalization factor
 
+print 'Factor = ', factor
+
 hbar=6.62e-34/(2*pi)
 kb=1.38e-23
 
 ## Default values
 
-tau_N='nan'
-tau_U='nan'
-tau_I='nan'
-tau_B='nan'
+tau_I='inf'
+tau_U='inf'
+tau_N='inf'
+tau_B='inf'
+tau_BI='inf'
 
 file=open('INPUT','r')
 list=file.readlines()
@@ -234,18 +239,8 @@ for i in list:
                 params.append([])
 	  	for j in range(len(a)-1):
   			params[-1].append(a[j+1])
-	
 	else:
-  	   if a[0]=='L=':
-		params.append([])
-                for j in range(len(a)-1):
-       	                params[-1].append(a[j+1])
-           if a[0]=='TYPE=':
-                params.append([])
-                for j in range(len(a)-1):
-                        params[-1].append(a[j+1])
-	   if a[0]!='TEMP=' and a[0]!='L=' and a[0]!='TYPE=':
- 		params.append(a[1])
+		params.append(a[1])
 
 TEMP= params[0]
 Temp=[]
@@ -256,6 +251,9 @@ else:
    for i in TEMP:
       Temp.append(float(i))
 
+BOUNDARY= params[1]
+TYPE= params[2]
+L= float(params[3])
 I_SF= float(params[4])
 COMP= params[5]
 K_W= params[6]
@@ -264,104 +262,94 @@ TAU_W= params[8]
 TAU_T= params[9]
 STP= float(params[10])
 
-grid=str(mesh.value[0])+str(mesh.value[1])+str(mesh.value[2])
-
-BOUNDARY= params[1]
-TYPE= params[2]
-size= params[3]
-
-for l in range(len(size)):
- L= float(size[l])
- if TYPE[l]=='W':
-       Leff=L
- if TYPE[l]=='R':
+if BOUNDARY=='Y':
+  if TYPE=='W':
+        Leff=L
+  if TYPE=='R':
         Leff=1.12*L
- if TYPE[l]=='F':
+  if TYPE=='F':
         Leff=2.25*L
- if BOUNDARY=='Y':
-        prefix=TYPE[l]+str(Leff)
- else:
-	Leff='inf'
+else:
+  Leff='inf'
+
+if BOUNDARY=='Y':
+	prefix=TYPE+str(Leff)
+else:
 	prefix='bulk'
 
- print '\n Sample size= ', prefix, '\n'
- 
+if COMP=='XX':
+	i1=0
+	i2=0
+if COMP=='YY':
+        i1=1
+        i2=1
+if COMP=='ZZ':
+        i1=2
+        i2=2
+if COMP=='XY':
+        i1=0
+        i2=1
+if COMP=='XZ':
+        i1=0
+        i2=2
+if COMP=='YZ':
+        i1=1
+        i2=2
 
- if COMP=='XX':
-		i1=0
-		i2=0
- if COMP=='YY':
-        	i1=1
-	        i2=1
- if COMP=='ZZ':
-	        i1=2
-        	i2=2
- if COMP=='XY':
-        	i1=0
-	        i2=1
- if COMP=='XZ':
-        	i1=0
-	        i2=2
- if COMP=='YZ':
-	        i1=1
-        	i2=2
- 
- file=open('K_T_'+prefix+'_'+COMP+'_'+grid+'.dat','w')
- file.write("%s \n\n"%('# (1)T[k]  (2)k_KCM[W/mK]  (3)NL-param[nm]  (4)k*_kin[W/mK]  (5)k*_col[W/mK] (6)sigma[adim]  (7)k_RTA[W/mK]'))
+grid=str(mesh.value[0])+str(mesh.value[1])+str(mesh.value[2])
 
- if K_W=='Y':
+file=open('K_T_'+prefix+'_'+COMP+'_'+grid+'.dat','w')
+file.write("%s \n\n"%('# (1)T[k]  (2)k[W/mK]  (3)NL-param[nm]  (4)k*_kin[W/mK]  (5)k*_col[W/mK] (6)sigma[adim]'))
+
+if K_W=='Y':
         file1=open('K_w_'+prefix+'_'+COMP+'_'+grid+'.dat','w')
-        file1.write("%s \n"%('# (1)T[k]  (2)w[rad/s] (3)k*_kin[J/mK]  (4)k*_col[J/mK]  (5)k*_kin_acc[W/mK]  (6)k*_col_acc[W/mK]  (7)sigma[adim] (8)k_tot_acc[W/mK] (9)Cv_acc[J/m^3K]'))
+        file1.write("%s \n"%('# (1)T[k]  (2)w[rad/s] (3)k*_kin[J/mK]  (4)k*_col[J/mK]  (5)k*_kin_acc[W/mK]  (6)k*_col_acc[W/mK]  (7)sigma[adim] (8)k_tot_acc[W/mK]'))
         k_w=[]
- if K_MFP=='Y':
+if K_MFP=='Y':
         file2=open('K_mfp_'+prefix+'_'+COMP+'_'+grid+'.dat','w')
         file2.write("%s \n"%('# (1)T[k]  (2)mfp[m]  (3)k*_kin[W/mK]  (4)k*_col[W/mK]  (5)k*_kin_acc[W/mK]  (6)k*_col_acc[W/mK]  (7)sigma[W/mK]  (8)k_tot_acc[W/mK]'))
         k_mfp=[]
- if TAU_W=='Y':
+if TAU_W=='Y':
         file3=open('Taus_w_'+prefix+'_'+grid+'.dat','w')
         file3.write("%s \n"%('# (1)T[k]  (2)w[rad/s]  (3)tau_I[s]  (4)tau_U[s]  (5)tau_N[s]  (6)tau_B[s] (7)v_mode[m/s]'))
- if TAU_T=='Y':
+if TAU_T=='Y':
         file4=open('Taus_T_'+prefix+'_'+COMP+'_'+grid+'.dat','w')
         file4.write("%s \n\n"%('# (1)T[k]  (2)tau_kin*[s]  (3)tau_col*[s]  (4)tau_N[s]  (5)sigma[adim] (6)vel_int'))
-        tau_T=[]
+	tau_T=[]
 
- print 'Temp[k]  Kappa_KCM[W/mK]  NL-length[nm] K_kin[W/mK]  K_col[W/mK] Sigma[adim]  Kappa_RTA[W/mK]\n'
+print 'Temp[k]  Kappa[W/mK]  NL-length[nm] K_kin[W/mK]  K_col[W/mK] Sigma[adim]\n'
 
- k_col=[]
+k_col=[]
 
- for k in range(len(T)):
-  if T[k] in Temp:
-   if K_W=='Y':
-	     k_w.append([])
-   if K_MFP=='Y':
-	     k_mfp.append([])
-   if TAU_W=='Y':
-	     file3.write('\n\n')
+for k in range(len(T)):
+ if T[k] in Temp:
+  if K_W=='Y':
+     k_w.append([])
+  if K_MFP=='Y':
+     k_mfp.append([])
+  if TAU_W=='Y':
+     file3.write('\n\n')
+  
+  k_kin=0.
+  Cv_int=0.
+  v2Cv=0.
+  v_int_num=0.
+  tau_kin_den=0.
+  tau_n_num=0.
+  v2_N_num=0.
+  v2_N_den=0.
+  k_col_num=0.
+  k_col_den=0.
+  tau_col_num=0.
+  tau_col_den=0.
+  tau_k=0.
 
-   k_kin= array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
-   Cv_int=0.
-   v2Cv= array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
-   v_int_num = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
-   tau_kin_den = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
-   tau_n_num = 0.
-   v2_N_num = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
-   v2_N_den = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
-   k_col_num = 0.
-   k_col_den = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
-   tau_col_num = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
-   tau_col_den = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
-   tau_k = 0
-
-   k_rta = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
-
-   for j in range(len(qpoint)):
+  for j in range(len(qpoint)):
     for i in range(len(freq[j])):
        g_N=gamma_N[k][j][i]
        g_U=gamma_U[k][j][i]
        if 'gamma_isotope' in f:
           g_I=gamma_I[j][i]
-       else:
-	  g_I=0.
        w=freq[j][i]*1.e12*2.*pi   # rads/s
        vx=vel[j][i][0]*100.  # ( THz * Angstrom ) --> m/s
        vy=vel[j][i][1]*100.
@@ -370,21 +358,34 @@ for l in range(len(size)):
        vel2_matrix=(outer(vel_vec,vel_vec))
        vel_m=linalg.norm(vel_vec)       
 
+       if qpoint[j][0]>1/12.:
+	   qpoint[j][0]=0.
+       if qpoint[j][1]>1/12.:
+           qpoint[j][1]=0.
+       if qpoint[j][2]>1/12.:
+           qpoint[j][2]=0.
+
        q_vec = array(qpoint[j][0]*b1+qpoint[j][1]*b2+qpoint[j][2]*b3)  #*2*pi/alat
        q2_matrix = (outer(q_vec,q_vec))
 
        Cv_mode=cv[k][j][i]*1.602e-19   #J/(m**3K)
-
-       x=hbar*w/(kb*T[k])	
-
        C1=q2_matrix/w**2.   #projection factor
 
        if 'gamma_isotope' in f:
-	  g_kin = g_I*I_SF + g_U
-          g_rta = g_I*I_SF + g_U + g_N
+          if g_I!=0.:
+               tau_I=(2*3.14159265*2.*1.e12*g_I)**-1.0*I_SF
+               if Leff!='inf':
+                       tau_BI=1./(np.sqrt(abs(vel2_matrix))/Leff+tau_I**-1)
+               else:
+                       tau_BI=tau_I
+          else:
+               if Leff!='inf':
+                    tau_B=np.true_divide(Leff,np.sqrt(abs(vel2_matrix)), where=(np.sqrt(abs(vel2_matrix))!=0.))
+                    tau_BI=tau_B
        else:
-	  g_kin = g_U
-          g_rta = g_U + g_N
+          if Leff!='inf':
+               tau_B=np.true_divide(Leff,np.sqrt(abs(vel2_matrix)), where=(np.sqrt(abs(vel2_matrix))!=0.))
+               tau_BI=tau_B
 
        if g_N!=0:
           tau_N=(2*3.14159265*2.*1.e12*g_N)**-1.0
@@ -392,24 +393,33 @@ for l in range(len(size)):
           v2_N_den+=Cv_mode*C1
           tau_n_num+=Cv_mode*tau_N
 
-       if g_kin!=0:
-	  tau_k=(2*3.14159265*2.*1.e12*g_kin)**-1.0	
+       if g_U!=0:
+          tau_U=(2*3.14159265*2.*1.e12*g_U)**-1.0
 	  if Leff!='inf':
-	     tau_k=(2*3.14159265*2.*1.e12*g_kin + vel_m/Leff)**-1.0	
+	          tau_k=(tau_U**-1.+np.true_divide(1,tau_BI, where=(tau_BI!=0.)))**-1.
 	  else:
-	     tau_k=(2*3.14159265*2.*1.e12*g_kin)**-1.0
+            if tau_I!='inf':
+		  tau_k=(tau_U**-1.+tau_I**-1.)**-1.
+	    else:
+		  tau_k=tau_U		  
           k_kin+=Cv_mode*vel2_matrix*tau_k
           k_col_num+=Cv_mode*q_vec*vel_vec/w
-	  k_col_den+=(2*3.14159265*2.*1.e12*g_kin)*Cv_mode*C1
-	  tau_col_den+=(2*3.14159265*2.*1.e12*g_kin)*Cv_mode*C1
-	  tau_col_num+=Cv_mode*C1
-
-       if g_rta!=0.:
-          if Leff!='inf':
-             tau_rta=(2*3.14159265*2.*1.e12*g_rta + vel_m/Leff)**-1.0
-	  else:
-	      tau_rta = (2*3.14159265*2.*1.e12*g_rta)**-1.0
-	  k_rta += Cv_mode*vel2_matrix*tau_rta
+	  if tau_I!='inf':
+	          k_col_den+=(tau_U**-1.+tau_I**-1.)*Cv_mode*C1
+		  tau_col_den+=(tau_U**-1.+tau_I**-1.)*Cv_mode*C1
+          else:
+		   k_col_den+=tau_U**-1.*Cv_mode*C1
+                   tau_col_den+=tau_U**-1.*Cv_mode*C1
+          tau_col_num+=Cv_mode*C1
+       else:
+        if Leff!='inf':
+          tau_k=tau_BI
+          k_kin+=Cv_mode*vel2_matrix*tau_k
+        if tau_I!='inf':
+                  k_col_num+=Cv_mode*q_vec*vel_vec/w
+                  k_col_den+=tau_I**-1.*Cv_mode*C1
+                  tau_col_num+=Cv_mode*C1
+                  tau_col_den+=tau_I**-1.*Cv_mode*C1
 
        v2Cv+=Cv_mode*(vel2_matrix)
 
@@ -421,72 +431,70 @@ for l in range(len(size)):
                k_w[-1].append([w,(Cv_mode*vel2_matrix*tau_k)[i1][i2], Cv_mode, T[k]])
        if K_MFP=='Y':
 	   if Leff!='inf':
-               k_mfp[-1].append([(vel_m*tau_k),(Cv_mode*vel2_matrix*tau_k)[i1][i2], Cv_mode, T[k]])
+               k_mfp[-1].append([(vel_m*tau_k)[i1][i2],(Cv_mode*vel2_matrix*tau_k)[i1][i2], Cv_mode, T[k]])
            else:
 	       k_mfp[-1].append([(vel_m*tau_k),(Cv_mode*vel2_matrix*tau_k)[i1][i2], Cv_mode, T[k]])
        if TAU_W=='Y':
-               if Leff!='inf' and linalg.norm(vel_vec)!=0:
-		   tau_B=Leff/linalg.norm(vel_vec)
-	       if g_I!=0 and I_SF!=0.:
-		   tau_I=(2*3.14159265*2.*1.e12*g_I*I_SF)**-1.0
-	       if g_U!=0:
-		   tau_U=(2*3.14159265*2.*1.e12*g_U)**-1.0
-	       file3.write("%s %s %s %s %s %s %s\n"%(T[k], w, tau_I, tau_U, tau_N, tau_B, linalg.norm(vel_vec)))
+               if Leff!='inf':
+	           file3.write("%s %s %s %s %s %s %s\n"%(T[k], w, tau_I, tau_U, tau_N, np.true_divide(Leff,linalg.norm(vel_vec), where=(linalg.norm(vel_vec)!=0.)), linalg.norm(vel_vec)))
+               else:
+                   file3.write("%s %s %s %s %s %s %s\n"%(T[k], w, tau_I, tau_U, tau_N, 'inf', linalg.norm(vel_vec)))
 
-   for i in range(3): # To avoid numerical errors
+  for i in range(3): # To avoid numerical errors
       for j in range(3):
        if factor*k_kin[i][j]<1e-5:
             k_kin[i][j]=0.
 
-   Cv=Cv_int
+  Cv=Cv_int
 
-   tau_col=tau_col_num/tau_col_den
+  tau_R=np.true_divide(k_kin,abs(v2Cv), where=(v2Cv!=0.))
+  tau_N=tau_n_num/Cv
+  v2_N=np.true_divide(v2_N_num,v2_N_den, where=(v2_N_den!=0.))
 
-   tau_R = k_kin/abs(v2Cv)
-   v2_N= v2_N_num/v2_N_den
-   kappa_col=outer(k_col_num, k_col_num)/k_col_den
+  v_int=np.sqrt(abs(v_int_num)/Cv)
 
-   landa2=tau_col*v2_N
+  sigma=tau_R/(tau_R+tau_N)     #(1./(1.+tau_N/(tau_R)))
 
-   if Leff!='inf':
+  kappa_kin=k_kin
+  kappa_col=np.divide(outer(k_col_num, k_col_num),k_col_den, where=(k_col_den!=0.))
+
+  tau_col=np.divide(tau_col_num,tau_col_den, where=(tau_col_den!=0.)) 
+
+  landa2=multiply(tau_col,v2_N)
+
+  if Leff!='inf':
       if Leff<1.:
-		  F = 1./(2*pi**2.)*Leff**2.*(np.sqrt(1.+4.*pi**2.*abs(landa2)/Leff**2)-1.)/abs(landa2)
+         F=np.true_divide(1./(2*pi**2.)*Leff**2.*(np.sqrt(1.+4.*pi**2.*landa2/Leff**2)-1.), landa2, where=(landa2!=0.))
       else:
          F=1.
-   else:
-        F=1.
+  else:
+	F=1.
 
-   tau_N=tau_n_num/Cv
+  ell_col=np.sqrt(sigma*v2_N*tau_col)
+  v2tau_R=k_kin/Cv
+  ell_kin=np.sqrt((1-sigma)*v2tau_R*tau_R)
 
-   v_int=np.sqrt(abs(v_int_num)/Cv)
+  ell=(ell_col+ell_kin)/1e-9  
 
-   sigma=tau_R/(tau_R+tau_N)     #(1./(1.+tau_N/(tau_R)))
+  print ell_kin[i1][i2]/1e-9, ell_col[i1][i2]/1e-9
 
-   kappa_kin=k_kin
+  k_col.append([(kappa_col*F)[i1][i2], Cv, sigma[i1][i2],(tau_col*v_int)[i1][i2]])
+ 
+  kappa_total=factor*(multiply(kappa_kin,(1.-sigma))+multiply(kappa_col,sigma)*F)
 
-   ell_col=np.sqrt(sigma*v2_N*tau_col)
-   v2tau_R=k_kin/Cv
-   ell_kin=np.sqrt((1-sigma)*v2tau_R*tau_R)
+  print T[k], ("    %8.3f     %8.3f      %8.3f    %8.3f    %8.3f    %8.3f" % (kappa_total[i1][i2], ell[i1][i2], (factor*(multiply(kappa_kin,(1.-sigma))))[i1][i2], (factor*multiply(kappa_col,sigma)*F)[i1][i2], sigma[i1][i2], factor*Cv/(N)))
 
-   ell=(ell_col+ell_kin)/1e-9  
+  file.write('%s %s %s %s %s %s\n' %(T[k], kappa_total[i1][i2], ell[i1][i2], (factor*kappa_kin)[i1][i2], (factor*kappa_col*F)[i1][i2], sigma[i1][i2]))
 
-   k_col.append([(kappa_col*F)[i1][i2], Cv, sigma[i1][i2],(tau_col*v_int)[i1][i2]])
-
-   kappa_total=factor*(kappa_kin*(1.-sigma)+kappa_col*sigma*F)
-
-   print T[k], ("     %8.3f         %8.3f     %8.3f    %8.3f    %.10f   %8.3f" % (kappa_total[i1][i2], ell[i1][i2], (factor*kappa_kin)[i1][i2], (factor*kappa_col*F)[i1][i2], sigma[i1][i2], k_rta[i1][i2]*factor))
-
-   file.write('%s %s %s %s %s %s %s\n' %(T[k], kappa_total[i1][i2], ell[i1][i2], (factor*kappa_kin)[i1][i2], (factor*kappa_col*F)[i1][i2], sigma[i1][i2], k_rta[i1][i2]*factor))
-
-   if TAU_T=='Y':
+  if TAU_T=='Y':
 	  file4.write('%s %s %s %s %s %s\n' %(T[k], tau_R[i1][i2], tau_col[i1][i2], tau_N, sigma[i1][i2], v_int[i1][i2]))
 
- print '\n', '--------------------------------- \n', 'Calculation done', '\n'
+print '\n', '--------------------------------- \n', 'Calculation done', '\n'
 
- if K_W=='Y' or K_MFP=='Y' or TAU_W=='Y' or TAU_T=='Y':
+if K_W=='Y' or K_MFP=='Y' or TAU_W=='Y' or TAU_T=='Y':
         print '------>' , ' Writting output files'
 
- if K_W=='Y':
+if K_W=='Y':
      lw=[]
      stp=int(STP)
      for i in range(len(k_w[0])):
@@ -499,33 +507,29 @@ for l in range(len(size)):
      for i in range(len(k_w)):
         new_l.append([])
         for j in range(stp):
-	    new_l[i].append([lw[j], 0., 0., 0.])
+	    new_l[i].append([lw[j], 0., 0.])
         for j in range(len(k_w[i])):
            for k in range(stp-1):
              if k!=(stp-2):
                 if k_w[i][j][0]<new_l[i][k+1][0] and k_w[i][j][0]>=new_l[i][k][0]:	
                     new_l[i][k][1]+=k_w[i][j][1]*factor
 		    new_l[i][k][2]+=k_col[i][0]*factor/k_col[i][1]*k_w[i][j][2]
-                    new_l[i][k][3]+=k_w[i][j][2]
 		    continue
              if k_w[i][j][0]>=new_l[i][k][0] and k==(len(new_l[i])-2):
                     new_l[i][k][1]+=k_w[i][j][1]*factor
                     new_l[i][k][2]+=k_col[i][0]*factor/k_col[i][1]*k_w[i][j][2]
-                    new_l[i][k][3]+=k_w[i][j][2]
                     continue
      for i in range(len(new_l)):
 	acc_kin=0.
 	acc_col=0.
-	new_cv = 0.
         file1.write('\n\n')
         for j in range(len(new_l[i])):
 		acc_kin+=new_l[i][j][1]
 		acc_col+= new_l[i][j][2]
-		new_cv += new_l[i][j][3] 
-        	file1.write('%s %s %s %s %s %s %s %s %s\n' %(k_w[i][j][-1], new_l[i][j][0], new_l[i][j][1], new_l[i][j][2], acc_kin, acc_col, k_col[i][2], acc_kin*(1.-k_col[i][2])+k_col[i][2]*acc_col, new_cv*factor))
+        	file1.write('%s %s %s %s %s %s %s %s\n' %(k_w[i][j][-1], new_l[i][j][0], new_l[i][j][1], new_l[i][j][2], acc_kin, acc_col, k_col[i][2], acc_kin*(1.-k_col[i][2])+k_col[i][2]*acc_col))
      file1.close()
 
- if K_MFP=='Y':
+if K_MFP=='Y':
      for i in range(len(k_mfp)):
 	     c=0
 	     kmfp=sorted(k_mfp[i])
@@ -549,15 +553,15 @@ for l in range(len(size)):
                      file2.write('%s %s %s %s %s %s %s %s \n' %(kmfp[j][-1], mfp, kmfp[j][1]*factor, '0.' ,kk_mfp_acc, '0.', sigma, kk_mfp_acc*(1.-sigma)))
      file2.close() 
 
- if K_W=='Y' or K_MFP=='Y' or TAU_W=='Y' or TAU_T=='Y':
+if K_W=='Y' or K_MFP=='Y' or TAU_W=='Y' or TAU_T=='Y':
         print '                  |'
         print '                  |'
         print '                  V'
         print '                Done','\n'
 
- if TAU_W=='Y':
+if TAU_W=='Y':
      file3.close()
- if TAU_T=='Y':
+if TAU_T=='Y':
      file4.close()
 
- file.close()
+file.close()
