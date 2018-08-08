@@ -219,10 +219,10 @@ kb=1.38e-23
 
 ## Default values
 
-tau_N='nan'
-tau_U='nan'
-tau_I='nan'
-tau_B='nan'
+tau_N='inf'
+tau_U='inf'
+tau_I='inf'
+tau_B='inf'
 
 file=open('INPUT','r')
 list=file.readlines()
