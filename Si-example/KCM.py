@@ -217,13 +217,6 @@ factor=(1./(V*N))  # Normalization factor
 hbar=6.62e-34/(2*pi)
 kb=1.38e-23
 
-## Default values
-
-tau_N='inf'
-tau_U='inf'
-tau_I='inf'
-tau_B='inf'
-
 file=open('INPUT','r')
 list=file.readlines()
 file.close()
@@ -356,6 +349,12 @@ for l in range(len(size)):
 
    for j in range(len(qpoint)):
     for i in range(len(freq[j])):
+
+       tau_N='inf'  ### Defalut values to avoid problems when writting file Tau_w
+       tau_U='inf'
+       tau_I='inf'
+       tau_B='inf'
+
        g_N=gamma_N[k][j][i]
        g_U=gamma_U[k][j][i]
        if 'gamma_isotope' in f:
