@@ -128,7 +128,7 @@ def get_data(args, interface_mode=None):
     args = parse_args()
     cell, _ = read_crystal_structure(args.filenames[0],
                                      interface_mode=interface_mode)
-    f = h5py.File(args.filenames[1])
+    f = h5py.File(args.filenames[1], 'r') 
     primitive_matrix = np.reshape(
         [fracval(x) for x in args.primitive_matrix.split()], (3, 3))
     primitive = get_primitive(cell, primitive_matrix)
@@ -169,7 +169,7 @@ qpoint=qpt_bz
 freq=freq_bz
 cv=cv_bz
 
-f = h5py.File(parse_args().filenames[1])
+f = h5py.File(args.filenames[1], 'r')
 
 ### Required parameters
 
@@ -202,10 +202,10 @@ print (' | | \ \  | |_____  | |      | | ')
 print (' |_|  \_\ |_______| |_|      |_| \n')
 print (' KINETIC  COLLECTIVE    MODEL    Version 1.2 for python3   ','\n')
 print ('--------------------------------- \n')
-print ('Running calculation of thermal conductivity on a ', str(mesh.value[0])+'x'+str(mesh.value[1])+'x'+str(mesh.value[2]) ,'mesh \n')
+print ('Running calculation of thermal conductivity on a ', str(mesh[(0)])+'x'+str(mesh[(1)])+'x'+str(mesh[(2)]) ,'mesh \n')
 
 
-V=(1.e12*1.e-10)**2*1.602e-19/(2.*pi*(k_conv.value)*1.e12)
+V=(1.e12*1.e-10)**2*1.602e-19/(2.*pi*(k_conv[()])*1.e12)
 
 ## Cell vectors
 
@@ -223,11 +223,6 @@ hbar=6.62e-34/(2*pi)
 kb=1.38e-23
 
 ## Default values
-
-tau_N='nan'
-tau_U='nan'
-tau_I='nan'
-tau_B='nan'
 
 file=open('INPUT','r')
 list=file.readlines()
@@ -270,7 +265,7 @@ TAU_W= params[8]
 TAU_T= params[9]
 STP= float(params[10])
 
-grid=str(mesh.value[0])+str(mesh.value[1])+str(mesh.value[2])
+grid=str(mesh[(0)])+str(mesh[(1)])+str(mesh[(2)])
 
 BOUNDARY= params[1]
 TYPE= params[2]
@@ -362,6 +357,12 @@ for l in range(len(size)):
 
    for j in range(len(qpoint)):
     for i in range(len(freq[j])):
+
+       tau_N='inf'  ### Defalut values to avoid problems when writting file Tau_w
+       tau_U='inf'
+       tau_I='inf'
+       tau_B='inf'
+
        g_N=gamma_N[k][j][i]
        g_U=gamma_U[k][j][i]
        if 'gamma_isotope' in f:
@@ -404,23 +405,21 @@ for l in range(len(size)):
             tau_k=(2*3.14159265*2.*1.e12*g_kin + vel_m/Leff)**-1.0	
         else:
             tau_k=(2*3.14159265*2.*1.e12*g_kin)**-1.0
-            k_kin+=Cv_mode*vel2_matrix*tau_k
-            k_col_num+=Cv_mode*q_vec*vel_vec/w
-            k_col_den+=(2*3.14159265*2.*1.e12*g_kin)*Cv_mode*C1
-            tau_col_den+=(2*3.14159265*2.*1.e12*g_kin)*Cv_mode*C1
-            tau_col_num+=Cv_mode*C1
+        k_kin+=Cv_mode*vel2_matrix*tau_k
+        k_col_num+=Cv_mode*q_vec*vel_vec/w
+        k_col_den+=(2*3.14159265*2.*1.e12*g_kin)*Cv_mode*C1
+        tau_col_den+=(2*3.14159265*2.*1.e12*g_kin)*Cv_mode*C1
+        tau_col_num+=Cv_mode*C1
 
        if g_rta!=0.:
         if Leff!='inf':
             tau_rta=(2*3.14159265*2.*1.e12*g_rta + vel_m/Leff)**-1.0
         else:
             tau_rta = (2*3.14159265*2.*1.e12*g_rta)**-1.0
-            k_rta += Cv_mode*vel2_matrix*tau_rta
+        k_rta += Cv_mode*vel2_matrix*tau_rta
 
        v2Cv+=Cv_mode*(vel2_matrix)
-
        v_int_num+=vel2_matrix*Cv_mode
-
        Cv_int+=Cv_mode
 
        if K_W=='Y':
@@ -480,7 +479,7 @@ for l in range(len(size)):
 
    kappa_total=factor*(kappa_kin*(1.-sigma)+kappa_col*sigma*F)
 
-   print (T[k], kappa_total[i1][i2], ell[i1][i2])
+   print (T[k], ("     %8.3f         %8.3f     %8.3f    %8.3f    %.10f   %8.3f" % (kappa_total[i1][i2], ell[i1][i2], (factor*kappa_kin)[i1][i2], (factor*kappa_col*F)[i1][i2], sigma[i1][i2], k_rta[i1][i2]*factor)))
 
    file.write('%s %s %s %s %s %s %s\n' %(T[k], kappa_total[i1][i2], ell[i1][i2], (factor*kappa_kin)[i1][i2], (factor*kappa_col*F)[i1][i2], sigma[i1][i2], k_rta[i1][i2]*factor))
 
