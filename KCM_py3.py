@@ -393,13 +393,13 @@ for l in range(len(size)):
         g_kin = g_U
         g_rta = g_U + g_N
 
-       if g_N!=0:
+       if g_N!=0 and vel_m>1e-5:
           tau_N=(2*3.14159265*2.*1.e12*g_N)**-1.0
           v2_N_num+=Cv_mode*vel2_matrix*tau_N*C1
           v2_N_den+=Cv_mode*C1
           tau_n_num+=Cv_mode*tau_N
 
-       if g_kin!=0:
+       if g_kin!=0 and vel_m>1e-5:
         tau_k=(2*3.14159265*2.*1.e12*g_kin)**-1.0	
         if Leff!='inf':
             tau_k=(2*3.14159265*2.*1.e12*g_kin + vel_m/Leff)**-1.0	
@@ -411,7 +411,7 @@ for l in range(len(size)):
         tau_col_den+=(2*3.14159265*2.*1.e12*g_kin)*Cv_mode*C1
         tau_col_num+=Cv_mode*C1
 
-       if g_rta!=0.:
+       if g_rta!=0. and vel_m>1e-5:
         if Leff!='inf':
             tau_rta=(2*3.14159265*2.*1.e12*g_rta + vel_m/Leff)**-1.0
         else:
@@ -484,7 +484,7 @@ for l in range(len(size)):
    file.write('%s %s %s %s %s %s %s\n' %(T[k], kappa_total[i1][i2], ell[i1][i2], (factor*kappa_kin)[i1][i2], (factor*kappa_col*F)[i1][i2], sigma[i1][i2], k_rta[i1][i2]*factor))
 
    if TAU_T=='Y':
-        file4.write('%s %s %s %s %s %s\n' %(T[k], tau_R[i1][i2], tau_col[i1][i2], tau_N, sigma[i1][i2], v_int[i1][i2]))
+        file4.write('%s %s %s %s %s %s\n' %(T[k], tau_R[i1][i2], tau_col[i1][i2], tau_N[i1][i2], sigma[i1][i2], v_int[i1][i2]))
 
  print ('\n', '--------------------------------- \n', 'Calculation done', '\n')
 
