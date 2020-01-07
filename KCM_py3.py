@@ -344,7 +344,7 @@ for l in range(len(size)):
    v2Cv= array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
    v_int_num = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
    tau_kin_den = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
-   tau_n_num = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
+   tau_n_num = 0. 
    v2_N_num = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
    v2_N_den = array([[0,0,0],[0,0,0],[0,0,0]],dtype=np.float64)
    k_col_num = 0.
@@ -484,7 +484,7 @@ for l in range(len(size)):
    file.write('%s %s %s %s %s %s %s\n' %(T[k], kappa_total[i1][i2], ell[i1][i2], (factor*kappa_kin)[i1][i2], (factor*kappa_col*F)[i1][i2], sigma[i1][i2], k_rta[i1][i2]*factor))
 
    if TAU_T=='Y':
-        file4.write('%s %s %s %s %s %s\n' %(T[k], tau_R[i1][i2], tau_col[i1][i2], tau_N[i1][i2], sigma[i1][i2], v_int[i1][i2]))
+        file4.write('%s %s %s %s %s %s\n' %(T[k], tau_R[i1][i2], tau_col[i1][i2], tau_N, sigma[i1][i2], v_int[i1][i2]))
 
  print ('\n', '--------------------------------- \n', 'Calculation done', '\n')
 
