@@ -206,9 +206,15 @@ V=(1.e12*1.e-10)**2*1.602e-19/(2.*pi*(k_conv.value)*1.e12)
 
 p_v = args.primitive_matrix.split()
 
-b1 = array([float(Fr(p_v[0])),float(Fr(p_v[1])),float(Fr(p_v[2]))])
-b2 = array([float(Fr(p_v[3])),float(Fr(p_v[4])),float(Fr(p_v[5]))])
-b3 = array([float(Fr(p_v[6])),float(Fr(p_v[7])),float(Fr(p_v[8]))])
+a1 = array([float(Fr(p_v[0])),float(Fr(p_v[1])),float(Fr(p_v[2]))])
+a2 = array([float(Fr(p_v[3])),float(Fr(p_v[4])),float(Fr(p_v[5]))])
+a3 = array([float(Fr(p_v[6])),float(Fr(p_v[7])),float(Fr(p_v[8]))])
+
+a_matrix = np.array([a1,a2,a3])
+
+b1 = np.cross(a2,a3)/np.linalg.det(a_matrix)  #2pi/alat
+b2 = np.cross(a3,a1)/np.linalg.det(a_matrix)  #2pi/alat
+b3 = np.cross(a1,a2)/np.linalg.det(a_matrix)  #2pi/alat
 
 N = mesh[0]*mesh[1]*mesh[2]
 

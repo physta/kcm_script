@@ -206,9 +206,15 @@ V=(1.e12*1.e-10)**2*1.602e-19/(2.*pi*(k_conv.value)*1.e12)
 
 p_v = args.primitive_matrix.split()
 
-b1 = array([float(Fr(p_v[0])),float(Fr(p_v[1])),float(Fr(p_v[2]))])
-b2 = array([float(Fr(p_v[3])),float(Fr(p_v[4])),float(Fr(p_v[5]))])
-b3 = array([float(Fr(p_v[6])),float(Fr(p_v[7])),float(Fr(p_v[8]))])
+a1 = array([float(Fr(p_v[0])),float(Fr(p_v[1])),float(Fr(p_v[2]))])
+a2 = array([float(Fr(p_v[3])),float(Fr(p_v[4])),float(Fr(p_v[5]))])
+a3 = array([float(Fr(p_v[6])),float(Fr(p_v[7])),float(Fr(p_v[8]))])
+
+a_matrix = np.array([a1,a2,a3])
+
+b1 = np.cross(a2,a3)/np.linalg.det(a_matrix)  #2pi/alat
+b2 = np.cross(a3,a1)/np.linalg.det(a_matrix)  #2pi/alat
+b3 = np.cross(a1,a2)/np.linalg.det(a_matrix)  #2pi/alat
 
 N = mesh[0]*mesh[1]*mesh[2]
 
@@ -266,7 +272,6 @@ size = params[3]
 def tau_value(scattering):
      t_value=(2*3.14159265*2.*1.e12*scattering)**-1.0
      return t_value
-
 
 for l in range(len(size)):
  L= float(size[l])
@@ -405,7 +410,6 @@ for l in range(len(size)):
           k_col_den += tau_value(g_kin)**-1*Cv_mode*C1
           tau_col_den += tau_value(g_kin)**-1*Cv_mode*C1
           tau_col_num += Cv_mode*C1
-
 
        if g_rta != 0. and vel_m>1e-5:
           if Leff != 'inf':
