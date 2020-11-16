@@ -479,11 +479,11 @@ for l in range(len(size)):
 
    kappa_kin = k_kin
 
-   ell_col = np.sqrt(sigma*v2_N*tau_col)
+   ell_col2 = sigma*v2_N*tau_col
    v2tau_R = k_kin/Cv
-   ell_kin = np.sqrt((1-sigma)*v2tau_R*tau_R)
+   ell_kin2 = (1-sigma)*v2tau_R*tau_R
 
-   ell = (ell_col+ell_kin)/1e-9  
+   ell = (np.sqrt(sigma*v2_N*tau_col+(1-sigma)*v2tau_R*tau_R))/1e-9
 
    k_col.append([(kappa_col*F)[i1][i2], Cv, sigma[i1][i2],(tau_col*v_int)[i1][i2]])
 
