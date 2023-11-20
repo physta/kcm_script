@@ -126,8 +126,7 @@ def parse_args():
 
 def get_data(args, interface_mode=None):
     args = parse_args()
-    cell, _ = read_crystal_structure(args.filenames[0],
-                                     interface_mode=interface_mode)
+    cell, _ = read_crystal_structure(args.filenames[0], interface_mode=interface_mode)
     f = h5py.File(args.filenames[1], 'r') 
     primitive_matrix = np.reshape(
         [fracval(x) for x in args.primitive_matrix.split()], (3, 3))
@@ -401,7 +400,7 @@ for l in range(len(size)):
         g_kin = g_U
         g_rta = g_U + g_N
 
-      if g_N != 0 and vel_m>1e-5:
+       if g_N != 0 and vel_m>1e-5:
           tau_N = tau_value(g_N)
           v2_N_num += Cv_mode*vel2_matrix*tau_N*C1
           v2_N_den += Cv_mode*C1
